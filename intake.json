@@ -1,0 +1,33 @@
+[
+    {
+        "agentId": "realtordemchenko@gmail.com",
+        "groupId": "test123",
+        "moveInDate": "2025-10-01",
+        "clients": [
+            {
+                "firstName": "Eva",
+                "lastName": "Demchenko",
+                "email": "realtordemchenko@gmail.com",
+                "role": "applicant",
+                "qualifies": true,
+                "clientId": "client-976749"
+            },
+            {
+                "firstName": "Alexey",
+                "lastName": "Demchenko",
+                "email": "convishka@gmail.com",
+                "role": "occupant",
+                "qualifies": true,
+                "clientId": "client-133415"
+            },
+            {
+                "firstName": "ana",
+                "lastName": "vish",
+                "email": "alxadmr@gmail.com",
+                "role": "guarantor",
+                "qualifies": true,
+                "clientId": "client-963814"
+            }
+        ]
+    }
+]

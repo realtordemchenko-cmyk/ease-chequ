@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Document Upload – Step 2</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .section {
+            background: #fff;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .doc-block {
+            margin-bottom: 10px;
+        }
+
+        .uploaded {
+            color: green;
+            font-weight: bold;
+        }
+
+        input[type="file"] {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Document Upload – Step 2</h1>
+
+    <div class="section" id="uploadSection"></div>
+
+    <script>
+        const intakeData = JSON.parse(localStorage.getItem("intakeData") || "{}");
+        const clients = intakeData.clients || [];
+        const agentId = intakeData.agentId || "unknown";
+        const groupId = intakeData.groupId || "unknown";
+
+        if (!clients.length) {
+            document.getElementById("uploadSection").innerHTML = `
+        <p>No participants found. Please return to Step 1.</p>
+        <a href="/client.html?agent=${agentId}&group=${groupId}">← Back to Intake</a>
+      `;
+            throw new Error("No clients in intakeData");
+        }
+
+        const docTemplates = {
+            employee: [
+                "Employment Letter",
+                "Paystubs (2–3 months)",
+                "Photo ID",
+                "Credit Report (PDF only)"
+            ],
+            self: [
+                "Bank Statements (2–3 months)",
+                "NOA (last 2 years)",
+                "Photo ID",
+                "Credit Report (PDF only)"
+            ],
+            both: [
+                "Employment Letter",
+                "Paystubs",
+                "Bank Statements",
+                "NOA",
+                "Photo ID",
+                "Credit Report (PDF only)"
+            ]
+        };
+
+        function renderUploadTable() {
+            const container = document.getElementById("uploadSection");
+
+            let html = "<table><thead><tr><th>Name</th><th>Role</th><th>Documents</th></tr></thead><tbody>";
+
+            clients.forEach(client => {
+                const fullName = `${client.firstName} ${client.lastName}`;
+                const role = client.role;
+                const qualifies = client.qualifies;
+                const clientId = client.clientId;
+
+                const docList = qualifies
+                    ? docTemplates.both
+                    : role === "occupant"
+                        ? ["Photo ID"]
+                        : [];
+
+                let docHtml = "";
+                docList.forEach(doc => {
+                    const safeType = doc.toLowerCase().replace(/[^a-z0-9]/gi, "_");
+                    docHtml += `
+            <div class="doc-block">
+              ${doc}
+              <input type="file" onchange="uploadDocument('${clientId}', '${safeType}', this)" />
+              <span id="${clientId}_${safeType}_status"></span>
+            </div>
+          `;
+                });
+
+                html += `<tr>
+          <td>${fullName}</td>
+          <td>${role}</td>
+          <td>${docHtml}</td>
+        </tr>`;
+            });
+
+            html += "</tbody></table>";
+            container.innerHTML = html;
+        }
+
+        async function uploadDocument(clientId, type, input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const filename = file.name;
+
+            // Simulate upload
+            const res = await fetch("http://localhost:3000/client/upload", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ clientId, type, filename })
+            });
+
+            const result = await res.json();
+            document.getElementById(`${clientId}_${type}_status`).innerText = "✅ Uploaded";
+            document.getElementById(`${clientId}_${type}_status`).className = "uploaded";
+        }
+
+        renderUploadTable();
+    </script>
+</body>
+
+</html>

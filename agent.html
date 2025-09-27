@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Agent Dashboard — Group Status</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        :root {
+            --bg: #ffffff;
+            --fg: #111111;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --primary: #1f6feb;
+            --danger: #dc2626;
+            --success: #16a34a;
+            --warn: #f59e0b;
+            --card: #f9fafb;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --fg: #e2e8f0;
+            --muted: #94a3b8;
+            --border: #334155;
+            --primary: #60a5fa;
+            --danger: #f87171;
+            --success: #22c55e;
+            --warn: #fbbf24;
+            --card: #111827;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: var(--bg);
+            color: var(--fg);
+        }
+
+        header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--card);
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 20px;
+        }
+
+        .note {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .container {
+            padding: 16px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 16px;
+        }
+
+        .sidebar {
+            border-right: 1px solid var(--border);
+            padding-right: 16px;
+        }
+
+        .search {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg);
+            color: var(--fg);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin: 4px 8px 4px 0;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid var(--primary);
+            background: var(--primary);
+            color: #fff;
+            border-radius: 4px;
+        }
+
+        .btn-secondary {
+            background: var(--card);
+            color: var(--fg);
+            border-color: var(--border);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .btn-warn {
+            background: var(--warn);
+            border-color: var(--warn);
+            color: #222;
+        }
+
+        .btn-small {
+            padding: 6px 10px;
+            font-size: 13px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border);
+            padding: 8px;
+            text-align: left;
+        }
+
+        thead {
+            background: var(--card);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .status-ok {
+            background: rgba(22, 163, 74, 0.15);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .status-missing {
+            background: rgba(220, 38, 38, 0.15);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .case-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg);
+            margin-bottom: 8px;
+        }
+
+        .case-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .case-actions {
+            display: inline-flex;
+            gap: 6px;
+        }
+
+        .row-actions {
+            display: inline-flex;
+            gap: 6px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 520px;
+            max-width: calc(100% - 24px);
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            display: none;
+        }
+
+        .modal header {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-body {
+            padding: 16px;
+        }
+
+        .field {
+            margin-bottom: 12px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg);
+            color: var(--fg);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Agent Dashboard — Group Status</h1>
+
+        <!-- Actions are always visible (gating temporarily disabled) -->
+        <div id="agent-actions" aria-live="polite">
+            <button id="btn-generate-link" class="btn">Generate Client Link</button>
+            <button id="btn-upload-docs" class="btn">Upload Client Documents</button>
+            <button id="btn-invite-agent" class="btn">+ Invite Agent</button>
+            <button id="btn-payments" class="btn btn-warn">Payments</button>
+            <button id="btn-agent-settings" class="btn btn-secondary">Agent Settings</button>
+            <button id="btn-theme-toggle" class="btn btn-secondary">Switch Theme</button>
+        </div>
+
+        <p class="note">Gating disabled: actions are visible without saving Agent Settings (temporary).</p>
+    </header>
+
+    <div class="container">
+        <div class="layout">
+            <aside class="sidebar">
+                <input id="search-input" type="text" class="search" placeholder="Search clients..." />
+                <div class="card" style="margin-bottom:12px;">
+                    <div style="font-weight:bold; margin-bottom:8px;">Case list</div>
+                    <div id="case-list"></div>
+                    <div class="field" style="margin-top:8px;">
+                        <input id="new-case-name" type="text" placeholder="New case name (e.g., test123)" />
+                    </div>
+                    <button id="add-case-btn" class="btn btn-secondary btn-small">Add case</button>
+                </div>
+                <button id="sidebar-theme-toggle" class="btn btn-secondary btn-small">Toggle Theme</button>
+                <button id="sidebar-agent-settings" class="btn btn-secondary btn-small">Agent Settings</button>
+                <p class="note" id="trial-note" style="margin-top:8px;">Trial: <span id="trial-days-left">12</span> days
+                    left.
+                </p>
+            </aside>
+
+            <main class="content">
+                <div class="card">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                        <div>
+                            <div style="font-weight:bold;">Group: <span id="current-group">—</span></div>
+                            <div class="note">Select a case from the list to view details.</div>
+                        </div>
+                        <div class="row-actions">
+                            <button id="copy-group-link" class="btn btn-secondary btn-small">Copy Group Link</button>
+                            <button id="delete-current-case" class="btn btn-danger btn-small">Delete current
+                                case</button>
+                        </div>
+                    </div>
+                </div>
+
+                <table id="group-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Income</th>
+                            <th>Credit score</th>
+                            <th>Documents</th>
+                            <th>Client link</th>
+                        </tr>
+                    </thead>
+                    <tbody id="group-tbody">
+                        <!-- Rows rendered by JS -->
+                    </tbody>
+                </table>
+            </main>
+        </div>
+    </div>
+
+    <!-- Agent Settings Modal (kept for later gating restoration) -->
+    <div id="agent-settings-backdrop" class="modal-backdrop"></div>
+    <div id="agent-settings-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="agent-settings-title">
+        <header>
+            <h2 id="agent-settings-title" style="margin:0; padding:12px 16px; font-size:16px;">Agent Settings</h2>
+        </header>
+        <div class="modal-body">
+            <form id="agent-settings-form">
+                <div class="field">
+                    <label for="agent-name">Full name</label>
+                    <input id="agent-name" name="agentName" type="text" required />
+                </div>
+                <div class="field">
+                    <label for="agent-email">Email</label>
+                    <input id="agent-email" name="agentEmail" type="email" required />
+                </div>
+                <div class="field">
+                    <label for="agent-phone">Phone</label>
+                    <input id="agent-phone" name="agentPhone" type="tel" required />
+                </div>
+                <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
+                    <button type="button" id="close-agent-settings" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" id="save-agent-settings" class="btn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            // Storage keys
+            var LS_KEYS = {
+                cases: 'cases',
+                theme: 'theme',
+                agentData: 'agentSettingsData' // kept for persistence; gating disabled
+            };
+
+            // Default case: test123 with basic participants to avoid undefined
+            var DEFAULT_CASE = {
+                id: 'test123',
+                name: 'test123',
+                participants: [
+                    { id: 'p1', name: 'Main Applicant', role: 'applicant', income: null, credit: null, docs: 0 },
+                    { id: 'p2', name: 'Occupant', role: 'occupant', income: null, credit: null, docs: 0 },
+                    { id: 'p3', name: 'Guarantor', role: 'guarantor', income: null, credit: null, docs: 0 }
+                ]
+            };
+
+            // Utilities
+            function byId(id) { return document.getElementById(id); }
+            function copyToClipboard(text) {
+                if (!navigator.clipboard) {
+                    var ta = document.createElement('textarea');
+                    ta.value = text;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    try { document.execCommand('copy'); } catch (e) { }
+                    document.body.removeChild(ta);
+                    return;
+                }
+                navigator.clipboard.writeText(text).catch(function () { });
+            }
+
+            // Theme
+            function applyTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light');
+                localStorage.setItem(LS_KEYS.theme, theme);
+            }
+            function toggleTheme() {
+                var current = localStorage.getItem(LS_KEYS.theme) || 'light';
+                applyTheme(current === 'light' ? 'dark' : 'light');
+            }
+
+            // Cases
+            function getCases() {
+                try {
+                    var raw = localStorage.getItem(LS_KEYS.cases);
+                    var arr = raw ? JSON.parse(raw) : null;
+                    if (!Array.isArray(arr) || arr.length === 0) {
+                        localStorage.setItem(LS_KEYS.cases, JSON.stringify([DEFAULT_CASE]));
+                        return [DEFAULT_CASE];
+                    }
+                    return arr;
+                } catch (e) {
+                    localStorage.setItem(LS_KEYS.cases, JSON.stringify([DEFAULT_CASE]));
+                    return [DEFAULT_CASE];
+                }
+            }
+            function setCases(cases) { localStorage.setItem(LS_KEYS.cases, JSON.stringify(cases)); }
+
+            function addCase(name) {
+                name = String(name || '').trim();
+                if (!name) return false;
+                var cases = getCases();
+                if (cases.some(function (c) { return c.name.toLowerCase() === name.toLowerCase(); })) return false;
+                var id = name;
+                var newCase = {
+                    id: id,
+                    name: name,
+                    participants: [
+                        { id: id + '-a', name: 'Main Applicant', role: 'applicant', income: null, credit: null, docs: 0 },
+                        { id: id + '-o', name: 'Occupant', role: 'occupant', income: null, credit: null, docs: 0 },
+                        { id: id + '-g', name: 'Guarantor', role: 'guarantor', income: null, credit: null, docs: 0 }
+                    ]
+                };
+                cases.push(newCase);
+                setCases(cases);
+                return true;
+            }
+
+            function deleteCase(id) {
+                var cases = getCases().filter(function (c) { return c.id !== id; });
+                if (cases.length === 0) { cases = [DEFAULT_CASE]; }
+                setCases(cases);
+            }
+
+            // Rendering
+            var state = { selectedCaseId: null };
+
+            function renderCaseList() {
+                var wrap = byId('case-list');
+                if (!wrap) return;
+                var cases = getCases();
+                wrap.innerHTML = '';
+                cases.forEach(function (c) {
+                    var item = document.createElement('div');
+                    item.className = 'case-item';
+                    var nameSpan = document.createElement('span');
+                    nameSpan.className = 'case-name';
+                    nameSpan.textContent = c.name;
+
+                    var actions = document.createElement('div');
+                    actions.className = 'case-actions';
+
+                    var openBtn = document.createElement('button');
+                    openBtn.className = 'btn btn-secondary btn-small';
+                    openBtn.textContent = 'Open';
+                    openBtn.addEventListener('click', function () {
+                        state.selectedCaseId = c.id;
+                        renderGroup(c);
+                    });
+
+                    var delBtn = document.createElement('button');
+                    delBtn.className = 'btn btn-danger btn-small';
+                    delBtn.textContent = 'Delete';
+                    delBtn.addEventListener('click', function () {
+                        var currentId = state.selectedCaseId;
+                        deleteCase(c.id);
+                        renderCaseList();
+                        var cases2 = getCases();
+                        if (!currentId || !cases2.some(function (cc) { return cc.id === currentId; })) {
+                            state.selectedCaseId = cases2[0].id;
+                            renderGroup(cases2[0]);
+                        } else {
+                            var current = cases2.find(function (cc) { return cc.id === currentId; });
+                            renderGroup(current);
+                        }
+                    });
+
+                    actions.appendChild(openBtn);
+                    actions.appendChild(delBtn);
+                    item.appendChild(nameSpan);
+                    item.appendChild(actions);
+                    wrap.appendChild(item);
+                });
+
+                if (!state.selectedCaseId) {
+                    state.selectedCaseId = cases[0].id;
+                    renderGroup(cases[0]);
+                }
+            }
+
+            function renderGroup(group) {
+                byId('current-group').textContent = group.name;
+                var tbody = byId('group-tbody');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+
+                group.participants.forEach(function (p) {
+                    var tr = document.createElement('tr');
+
+                    var tdName = document.createElement('td');
+                    tdName.textContent = p.name || '—';
+                    tr.appendChild(tdName);
+
+                    var tdRole = document.createElement('td');
+                    tdRole.textContent = p.role || '—';
+                    tr.appendChild(tdRole);
+
+                    var tdIncome = document.createElement('td');
+                    tdIncome.textContent = (p.income === null || p.income === undefined) ? '—' : ('$' + p.income);
+                    tr.appendChild(tdIncome);
+
+                    var tdCredit = document.createElement('td');
+                    tdCredit.textContent = (p.credit === null || p.credit === undefined) ? '—' : String(p.credit);
+                    tr.appendChild(tdCredit);
+
+                    var tdDocs = document.createElement('td');
+                    var badge = document.createElement('span');
+                    badge.className = 'status-badge ' + (p.docs && p.docs > 0 ? 'status-ok' : 'status-missing');
+                    badge.textContent = (p.docs && p.docs > 0) ? (p.docs + ' docs') : 'Missing';
+                    tdDocs.appendChild(badge);
+                    tr.appendChild(tdDocs);
+
+                    var tdLink = document.createElement('td');
+                    var linkBtn = document.createElement('button');
+                    linkBtn.className = 'btn btn-secondary btn-small';
+                    linkBtn.textContent = 'Copy Link';
+                    linkBtn.addEventListener('click', function () {
+                        var url = location.origin + '/client/' + encodeURIComponent(group.id) + '/' + encodeURIComponent(p.id);
+                        copyToClipboard(url);
+                    });
+                    tdLink.appendChild(linkBtn);
+                    tr.appendChild(tdLink);
+
+                    tbody.appendChild(tr);
+                });
+
+                var delCurrent = byId('delete-current-case');
+                if (delCurrent) {
+                    delCurrent.onclick = function () {
+                        deleteCase(group.id);
+                        renderCaseList();
+                    };
+                }
+
+                var copyGroup = byId('copy-group-link');
+                if (copyGroup) {
+                    copyGroup.onclick = function () {
+                        var url = location.origin + '/group/' + encodeURIComponent(group.id);
+                        copyToClipboard(url);
+                    };
+                }
+            }
+
+            // Agent settings modal open/close/save (gating disabled, but persistence kept)
+            function openAgentSettings() {
+                byId('agent-settings-backdrop').style.display = 'block';
+                byId('agent-settings-modal').style.display = 'block';
+                try {
+                    var raw = localStorage.getItem(LS_KEYS.agentData);
+                    if (raw) {
+                        var data = JSON.parse(raw);
+                        if (data.agentName) byId('agent-name').value = data.agentName;
+                        if (data.agentEmail) byId('agent-email').value = data.agentEmail;
+                        if (data.agentPhone) byId('agent-phone').value = data.agentPhone;
+                    }
+                } catch (e) { }
+            }
+            function closeAgentSettings() {
+                byId('agent-settings-backdrop').style.display = 'none';
+                byId('agent-settings-modal').style.display = 'none';
+            }
+            function saveAgentSettings(e) {
+                e.preventDefault();
+                var name = byId('agent-name').value.trim();
+                var email = byId('agent-email').value.trim();
+                var phone = byId('agent-phone').value.trim();
+                if (!name || !email || !phone) { alert('Please fill all required fields.'); return; }
+                var data = { agentName: name, agentEmail: email, agentPhone: phone };
+                localStorage.setItem(LS_KEYS.agentData, JSON.stringify(data));
+                closeAgentSettings();
+            }
+
+            // Search
+            function filterCasesBySearch() {
+                var q = (byId('search-input').value || '').toLowerCase();
+                var nodes = byId('case-list').children;
+                for (var i = 0; i < nodes.length; i++) {
+                    var el = nodes[i];
+                    var name = el.querySelector('.case-name').textContent.toLowerCase();
+                    el.style.display = name.includes(q) ? '' : 'none';
+                }
+            }
+
+            // Init
+            document.addEventListener('DOMContentLoaded', function () {
+                // Theme init
+                applyTheme(localStorage.getItem(LS_KEYS.theme) || 'light');
+
+                // Cases UI
+                renderCaseList();
+
+                // Buttons and events
+                var addBtn = byId('add-case-btn');
+                if (addBtn) {
+                    addBtn.addEventListener('click', function () {
+                        var nameInput = byId('new-case-name');
+                        var ok = addCase(nameInput.value);
+                        if (!ok) { alert('Case name is empty or already exists.'); return; }
+                        nameInput.value = '';
+                        renderCaseList();
+                    });
+                }
+
+                var search = byId('search-input');
+                if (search) { search.addEventListener('input', filterCasesBySearch); }
+
+                var themeBtn = byId('btn-theme-toggle');
+                if (themeBtn) { themeBtn.addEventListener('click', toggleTheme); }
+                var sidebarThemeBtn = byId('sidebar-theme-toggle');
+                if (sidebarThemeBtn) { sidebarThemeBtn.addEventListener('click', toggleTheme); }
+
+                var headerSettingsBtn = byId('btn-agent-settings');
+                if (headerSettingsBtn) { headerSettingsBtn.addEventListener('click', openAgentSettings); }
+                var sidebarSettingsBtn = byId('sidebar-agent-settings');
+                if (sidebarSettingsBtn) { sidebarSettingsBtn.addEventListener('click', openAgentSettings); }
+
+                byId('close-agent-settings').addEventListener('click', closeAgentSettings);
+                byId('agent-settings-form').addEventListener('submit', saveAgentSettings);
+            });
+        })();
+    </script>
+</body>
+
+</html>

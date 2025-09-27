@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Rental Intake – Step 1</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .section {
+            background: #fff;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        input,
+        select,
+        button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            font-size: 16px;
+        }
+
+        .client-block {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .inline {
+            display: flex;
+            gap: 10px;
+        }
+
+        .inline input {
+            flex: 1;
+        }
+
+        .remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Rental Intake – Step 1</h1>
+
+    <div class="section">
+        <label for="moveInDate">Move-in Date</label>
+        <input type="date" id="moveInDate" />
+
+        <div id="clientsContainer"></div>
+
+        <button onclick="addClient()">Add Another Person</button>
+        <button onclick="submitIntake()">Continue to Documents</button>
+    </div>
+
+    <script>
+        let clients = [];
+        let agentId = "";
+        let groupId = "";
+
+        function parseURLParams() {
+            const params = new URLSearchParams(window.location.search);
+            agentId = params.get("agent") || "";
+            groupId = params.get("group") || "";
+            if (!agentId || !groupId) {
+                alert("Missing agent or group ID in URL.");
+            }
+        }
+
+        function addClient() {
+            const applicantCount = clients.filter(c => c.role === "applicant").length;
+            if (applicantCount >= 2) {
+                alert("Maximum 2 applicants allowed.");
+                return;
+            }
+
+            const clientId = "client-" + Math.floor(Math.random() * 1000000);
+            const index = clients.length;
+
+            clients.push({ firstName: "", lastName: "", email: "", role: "applicant", qualifies: true, clientId });
+
+            const container = document.getElementById("clientsContainer");
+
+            const block = document.createElement("div");
+            block.className = "client-block";
+            block.dataset.index = index;
+
+            block.innerHTML = `
+        <div class="inline">
+          <input type="text" placeholder="First Name" oninput="updateField(${index}, 'firstName', this.value)" />
+          <input type="text" placeholder="Last Name" oninput="updateField(${index}, 'lastName', this.value)" />
+        </div>
+
+        <label>Email</label>
+        <input type="email" placeholder="Email" oninput="updateField(${index}, 'email', this.value)" />
+
+        <label>Role</label>
+        <select onchange="updateRole(${index}, this.value)">
+          <option value="applicant">Applicant</option>
+          <option value="occupant">Occupant</option>
+          <option value="guarantor">Guarantor</option>
+        </select>
+
+        <label>
+          <input type="checkbox" checked onchange="updateField(${index}, 'qualifies', this.checked)" />
+          Participates in qualification
+        </label>
+      `;
+
+            const removeBtn = document.createElement("button");
+            removeBtn.className = "remove-btn";
+            removeBtn.innerText = "Remove";
+            removeBtn.onclick = () => removeClient(index);
+            block.appendChild(removeBtn);
+
+            container.appendChild(block);
+        }
+
+        function updateField(index, field, value) {
+            clients[index][field] = value;
+        }
+
+        function updateRole(index, value) {
+            const applicantCount = clients.filter((c, i) => i !== index && c.role === "applicant").length;
+            if (value === "applicant" && applicantCount >= 2) {
+                alert("Maximum 2 applicants allowed.");
+                document.querySelectorAll(".client-block")[index].querySelector("select").value = clients[index].role;
+                return;
+            }
+            clients[index].role = value;
+        }
+
+        function removeClient(index) {
+            clients.splice(index, 1);
+            renderClients();
+        }
+
+        function renderClients() {
+            const container = document.getElementById("clientsContainer");
+            container.innerHTML = "";
+            const oldClients = [...clients];
+            clients = [];
+            oldClients.forEach(c => {
+                addClient();
+                const block = document.querySelectorAll(".client-block")[clients.length - 1];
+                block.querySelector("input[placeholder='First Name']").value = c.firstName;
+                block.querySelector("input[placeholder='Last Name']").value = c.lastName;
+                block.querySelector("input[type='email']").value = c.email;
+                block.querySelector("select").value = c.role;
+                block.querySelector("input[type='checkbox']").checked = c.qualifies;
+                clients[clients.length - 1] = { ...c };
+            });
+        }
+
+        async function submitIntake() {
+            const moveInDate = document.getElementById("moveInDate").value;
+            if (!moveInDate) return alert("Please select a move-in date.");
+            if (clients.length === 0) return alert("Please add at least one person.");
+            for (const c of clients) {
+                if (!c.firstName.trim() || !c.lastName.trim() || !c.email.trim()) {
+                    return alert("Please fill in all fields for each person.");
+                }
+            }
+
+            const intakeData = {
+                agentId,
+                groupId,
+                moveInDate,
+                clients
+            };
+
+            localStorage.setItem("intakeData", JSON.stringify(intakeData));
+
+            await fetch("http://localhost:3000/client/intake", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(intakeData)
+            });
+
+            window.location.href = "/client-step2.html";
+        }
+
+        parseURLParams();
+        addClient();
+    </script>
+</body>
+
+</html>
