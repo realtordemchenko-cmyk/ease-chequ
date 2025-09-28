@@ -1,73 +1,38 @@
-const express = require("express");
-const cors = require("cors");
-const fs = require("fs");
-const path = require("path");
+// D:\Projects\Ease Chequ\backend\src\index.js
+
+const express = require('express');
+const path = require('path');
+const cors = require('cors');
 
 const app = express();
+const PORT = 3000;
+
+// 🔐 Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-const DATA_DIR = "D:/Projects/Ease Chequ";
-const intakePath = path.join(DATA_DIR, "intake.json");
-const uploadsPath = path.join(DATA_DIR, "uploads.json");
+// 🌐 Статические файлы из корня проекта
+app.use(express.static(path.join(__dirname, '../../')));
 
-app.use(express.static(DATA_DIR));
+// 🧠 Маршрут для действий агента
+app.post('/api/agent-action', (req, res) => {
+    const { action } = req.body;
 
-// GET /agent/status/:groupId
-app.get("/agent/status/:groupId", (req, res) => {
-    const groupId = req.params.groupId;
-    const intake = fs.existsSync(intakePath) ? JSON.parse(fs.readFileSync(intakePath)) : [];
-    const uploads = fs.existsSync(uploadsPath) ? JSON.parse(fs.readFileSync(uploadsPath)) : [];
+    console.log(`Получено действие агента: ${action}`);
 
-    const group = intake.find(g => g.groupId === groupId);
-    if (!group) return res.json({ clients: [], uploads: [] });
-
-    res.json({ clients: group.clients || [], uploads });
-});
-
-// GET /agent/groups
-app.get("/agent/groups", (req, res) => {
-    const intake = fs.existsSync(intakePath) ? JSON.parse(fs.readFileSync(intakePath)) : [];
-    const uploads = fs.existsSync(uploadsPath) ? JSON.parse(fs.readFileSync(uploadsPath)) : [];
-
-    const groups = intake.map(group => {
-        const allUploaded = group.clients.every(client =>
-            uploads.some(u => u.clientId === client.clientId)
-        );
-        return {
-            groupId: group.groupId,
-            agentId: group.agentId,
-            completed: allUploaded
-        };
-    });
-
-    res.json(groups);
-});
-
-// POST /agent/add-client
-app.post("/agent/add-client", (req, res) => {
-    const { groupId, agentId, name, surname, email, role } = req.body;
-    const intake = fs.existsSync(intakePath) ? JSON.parse(fs.readFileSync(intakePath)) : [];
-
-    let group = intake.find(g => g.groupId === groupId);
-    if (!group) {
-        group = { groupId, agentId, clients: [] };
-        intake.push(group);
+    // Пример обработки действия
+    switch (action) {
+        case 'submit':
+            return res.json({ status: 'успешно', message: 'Данные агента приняты' });
+        case 'verify':
+            return res.json({ status: 'успешно', message: 'Документы агента проверены' });
+        default:
+            return res.status(400).json({ status: 'ошибка', message: 'Неизвестное действие' });
     }
-
-    group.clients.push({
-        clientId: email,
-        name: `${name} ${surname}`,
-        email,
-        role
-    });
-
-    fs.writeFileSync(intakePath, JSON.stringify(intake, null, 2));
-    res.json({ success: true });
 });
 
-// Start server
-const PORT = process.env.PORT || 3000;
+// 🟢 Запуск сервера
 app.listen(PORT, () => {
-    console.log(`Agent backend running on port ${PORT}`);
+    console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
 });

@@ -2,55 +2,18 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <title>Agent Dashboard — Group Status</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <title>Agent Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="/favicon.ico" />
 </head>
 
 <body>
-  <header>
-    <h1>Agent Dashboard — Group Status</h1>
-    <nav>
-      <ul>
-        <li><a href="/agent.html">Agent Settings</a></li>
-        <li><a href="/client.html">Client Page</a></li>
-        <li><a href="/admin.html">Admin Page</a></li>
-      </ul>
-    </nav>
-    <!-- Оставляем только одну кнопку Agent Settings -->
-    <div id="agent-actions">
-      <button id="btn-generate-link">Generate Client Link</button>
-      <button id="btn-upload-docs">Upload Client Documents</button>
-      <button id="btn-invite-agent">+ Invite Agent</button>
-      <button id="btn-payments">Payments</button>
-      <button id="btn-agent-settings">Agent Settings</button>
-      <button id="btn-theme-toggle">Switch Theme</button>
-    </div>
-  </header>
+  <!-- React mount point -->
+  <div id="root"></div>
 
-  <main>
-    <section id="case-list">
-      <h2>Case List</h2>
-      <input type="text" placeholder="Search clients...">
-      <ul>
-        <li>test123</li>
-        <!-- Other case items -->
-      </ul>
-      <button id="toggle-theme">Toggle Theme</button>
-      <p>Trial active — 12 days left</p>
-    </section>
-
-    <section id="actions">
-      <h2>Actions</h2>
-      <button id="generate-link">Generate Client Link</button>
-      <button id="upload-docs">Upload Client Documents</button>
-      <button id="invite-agent">+ Invite Agent</button>
-      <button id="view-payments">Payments</button>
-    </section>
-  </main>
-
-  <script src="app.js"></script>
+  <!-- Correct relative path for Vite to handle TSX -->
+  <script type="module" src="./src/main.tsx"></script>
 </body>
 
 </html>
