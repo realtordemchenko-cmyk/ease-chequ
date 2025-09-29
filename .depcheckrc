@@ -1,0 +1,7 @@
+{
+    "ignoreMatches": [
+        "express",
+        "cors",
+        "@prisma/client"
+    ]
+}

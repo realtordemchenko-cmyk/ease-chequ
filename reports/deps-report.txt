@@ -1,0 +1,9 @@
+﻿
+> ease-chequ@0.0.0 audit:deps D:\Projects\Ease Chequ
+> pnpm exec depcheck --skip-missing true
+
+Unused dependencies
+* @prisma/client
+* cors
+* express
+ÔÇëELIFECYCLEÔÇë Command failed with exit code 4294967295.

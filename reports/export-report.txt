@@ -1,0 +1,4 @@
+﻿
+> ease-chequ@0.0.0 audit:exports D:\Projects\Ease Chequ
+> pnpm exec ts-prune --no-ignore --include client/src
+

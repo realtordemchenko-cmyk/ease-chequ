@@ -12,28 +12,33 @@
     "preview": "vite preview",
     "studio": "prisma studio",
     "generate": "prisma generate",
-    "migrate": "prisma migrate dev"
+    "migrate": "prisma migrate dev",
+    "audit:deps": "pnpm exec depcheck --skip-missing true",
+    "audit:exports": "pnpm exec ts-prune --no-ignore --include client/src"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.3",
+    "concurrently": "^9.0.0",
+    "depcheck": "^1.4.7",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.4.0",
     "prisma": "^6.16.2",
+    "ts-prune": "^0.10.3",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.44.0",
-    "vite": "^7.1.7",
-    "concurrently": "^9.0.0"
+    "vite": "^7.1.7"
   }
 }
