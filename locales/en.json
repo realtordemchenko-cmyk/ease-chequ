@@ -1,0 +1,19 @@
+{
+    "app": {
+        "title": "Prequal-Rent",
+        "continue": "Continue",
+        "submitDocuments": "Submit Documents",
+        "downloadPackage": "Download Package"
+    },
+    "roles": {
+        "applicant": "Applicant",
+        "guarantor": "Guarantor",
+        "occupant": "Occupant",
+        "agent": "Agent"
+    },
+    "statuses": {
+        "ok": "OK",
+        "needsAttention": "Needs Attention",
+        "flagged": "Flagged"
+    }
+}

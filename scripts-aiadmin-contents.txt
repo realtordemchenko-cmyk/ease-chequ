@@ -1,0 +1,13 @@
+﻿.\ai-admin\actions.py
+.\ai-admin\app.log
+.\ai-admin\log_monitor.py
+.\Scripts\find-orphans.js
+.\Scripts\find-unused-assets.js
+.\Scripts\normalizer.exe
+.\Scripts\pip3.13.exe
+.\Scripts\pip3.exe
+.\Scripts\test_email_notification.py
+.\Scripts\test_notifications.py
+.\Scripts\test_notifications.ts
+.\Scripts\test-all.js
+.\Scripts\test-api.js

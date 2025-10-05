@@ -1,0 +1,11 @@
+﻿.\Tests\actual
+.\Tests\api
+.\Tests\payloads
+.\Tests\payloads\auth
+.\Tests\payloads\data
+.\Tests\payloads\error
+.\Tests\payloads\system
+.\Tests\reports
+.\Tests\scripts
+.\Tests\scripts\client
+.\Tests\scripts\client\src

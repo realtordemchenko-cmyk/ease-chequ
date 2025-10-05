@@ -1,0 +1,11 @@
+﻿{
+  "url": "https://postman-echo.com/get?live=true",
+  "method": "GET",
+  "headers": {},
+  "body": {},
+  "expectedResponse": {
+    "args": {
+      "live": "true"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+<testsuite>
+  <testcase name="AuthCheck" />
+  <testcase name="HealthCheck" />
+  <testcase name="InvalidRoute" />
+  <testcase name="LiveEcho" />
+  <testcase name="PingTest" />
+  <testcase name="UserInfo" />
+  <testcase name="Login">
+    <failure>Test 'Login' failed: The remote server returned an error: (404) Not Found.</failure>
+  </testcase>
+  <testcase name="GetData">
+    <failure>Test 'GetData' failed: The remote server returned an error: (404) Not Found.</failure>
+  </testcase>
+  <testcase name="InvalidRoute" />
+  <testcase name="Health">
+    <failure>Test 'Health' failed: The remote server returned an error: (404) Not Found.</failure>
+  </testcase>
+</testsuite>

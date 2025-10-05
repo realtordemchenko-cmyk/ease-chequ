@@ -1,0 +1,11 @@
+﻿{
+  "url": "https://postman-echo.com/get?user=alexey",
+  "method": "GET",
+  "headers": {},
+  "body": {},
+  "expectedResponse": {
+    "args": {
+      "user": "alexey"
+    }
+  }
+}

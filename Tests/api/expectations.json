@@ -1,0 +1,18 @@
+{
+  "submit.json": {
+    "status": "success",
+    "message": "Agent data submitted successfully"
+  },
+  "verify.json": {
+    "status": "success",
+    "message": "Agent documents verified successfully"
+  },
+  "unknown.json": {
+    "status": "error",
+    "message": "Unknown action"
+  },
+  "empty.json": {
+    "status": "error",
+    "message": "Invalid payload"
+  }
+}

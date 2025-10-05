@@ -1,0 +1,13 @@
+﻿{
+  "url": "https://postman-echo.com/get?auth=true",
+  "method": "GET",
+  "headers": {
+    "Authorization": "Bearer token123"
+  },
+  "body": {},
+  "expectedResponse": {
+    "args": {
+      "auth": "true"
+    }
+  }
+}

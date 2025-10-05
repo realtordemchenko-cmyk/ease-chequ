@@ -1,0 +1,8 @@
+﻿{
+    "url": "http://localhost:3000/invalid",
+    "method": "GET",
+    "headers": {},
+    "expectedResponse": {
+        "status": 404
+    }
+}

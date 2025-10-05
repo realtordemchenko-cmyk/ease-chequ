@@ -1,0 +1,11 @@
+# Cleanup candidates (Admin panels)
+# Updated: 2025-10-05 19:10 EDT
+
+.\client\app\admin_DISABLED
+.\client\src\admin_OLD_DISABLED
+.\client\src\admin_OLD_DISABLED\agents
+.\client\src\admin_OLD_DISABLED\dashboard
+.\client\src\admin_OLD_DISABLED\logs
+.\client\src\admin_OLD_DISABLED\requests
+.\client\src\admin_OLD_DISABLED\settings
+.\Tests\scripts\client\src\admin_TEST_DISABLED

@@ -1,0 +1,11 @@
+{
+    "url": "https://postman-echo.com/get?ping=true",
+    "method": "GET",
+    "headers": {},
+    "body": {},
+    "expectedResponse": {
+        "args": {
+            "ping": "true"
+        }
+    }
+}

@@ -1,24 +1,32 @@
-# Dependencies
+﻿# === Node / Next.js ===
 node_modules/
-
-# Build output
+.next/
 dist/
-.vite/
-
-# Logs and temp
+build/
+coverage/
 *.log
-*.tmp
-*.temp
 
-# OS-specific
+# === OS / IDE ===
 .DS_Store
 Thumbs.db
-
-# IDE
 .vscode/
+.idea/
 
-# Coverage
-coverage/
+# === Python / Misc (из ai-admin) ===
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.exe
+*.dll
 
-# Misc
-*.local
+# === Project-specific ===
+archive/
+Tests/actual/
+*.report
+*.tmp
+
+# === Env / Secrets ===
+.env
+.env.local
+.env.*.local

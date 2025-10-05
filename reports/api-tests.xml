@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <testsuite name="API Tests" tests="4" failures="4">
+    
+    <testcase classname="api" name="empty.json">
+      <failure message="Mismatch">fetch failed</failure>
+    </testcase>
+
+    <testcase classname="api" name="submit.json">
+      <failure message="Mismatch">fetch failed</failure>
+    </testcase>
+
+    <testcase classname="api" name="unknown.json">
+      <failure message="Mismatch">fetch failed</failure>
+    </testcase>
+
+    <testcase classname="api" name="verify.json">
+      <failure message="Mismatch">fetch failed</failure>
+    </testcase>
+  </testsuite>

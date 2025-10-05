@@ -1,0 +1,21 @@
+file=docker-compose.yml
+version: "3.9"
+services:
+  backend:
+    build: ./backend
+    environment:
+      - PORT=3000
+      - UPLOAD_DIR=/data/uploads
+      - FILE_ENCRYPTION_KEY=${FILE_ENCRYPTION_KEY}
+    volumes:
+      - ./data:/data
+    ports:
+      - "3000:3000"
+  frontend:
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: sh -c "npm i -g pnpm && pnpm install && pnpm dev"
+    ports:
+      - "5173:5173"

@@ -1,0 +1,14 @@
+﻿{
+  "url": "http://localhost:3000/login",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "username": "test",
+    "password": "test"
+  },
+  "expectedResponse": {
+    "status": 200
+  }
+}

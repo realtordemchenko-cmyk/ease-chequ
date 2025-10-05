@@ -1,0 +1,9 @@
+﻿{
+  "url": "https://postman-echo.com/status/404",
+  "method": "GET",
+  "headers": {},
+  "body": {},
+  "expectedResponse": {
+    "status": "404"
+  }
+}

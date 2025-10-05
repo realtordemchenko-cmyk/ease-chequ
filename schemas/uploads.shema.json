@@ -1,0 +1,44 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Upload",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "filename": {
+            "type": "string"
+        },
+        "uploadedBy": {
+            "type": "string"
+        },
+        "uploadedAt": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "processed",
+                "failed"
+            ]
+        },
+        "checksum": {
+            "type": "string"
+        },
+        "contentType": {
+            "type": "string"
+        },
+        "size": {
+            "type": "number"
+        }
+    },
+    "required": [
+        "id",
+        "filename",
+        "uploadedBy",
+        "uploadedAt",
+        "status"
+    ]
+}
