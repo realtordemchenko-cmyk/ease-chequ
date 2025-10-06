@@ -16,7 +16,6 @@ function RequestsSection() {
 export default function AdminPage() {
     const [activeSection, setActiveSection] = useState("dashboard");
 
-    // Следим за изменением hash
     useEffect(() => {
         const updateSection = () => {
             const hash = window.location.hash.replace("#", "");
@@ -28,24 +27,12 @@ export default function AdminPage() {
     }, []);
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-            {/* Навигация */}
-            <nav style={{ display: "flex", gap: "16px", padding: "12px" }}>
-                <a href="#dashboard">Dashboard</a>
-                <a href="#agents">Agents</a>
-                <a href="#clients">Clients</a>
-                <a href="#requests">Requests</a>
-                <a href="#logs">Logs</a>
-            </nav>
-
-            {/* Контент секций */}
-            <div style={{ padding: "16px" }}>
-                {activeSection === "dashboard" && <DashboardSection />}
-                {activeSection === "agents" && <AgentsPage />}
-                {activeSection === "clients" && <ClientsPage />}
-                {activeSection === "requests" && <RequestsSection />}
-                {activeSection === "logs" && <LogsPage />}
-            </div>
+        <div style={{ padding: "16px" }}>
+            {activeSection === "dashboard" && <DashboardSection />}
+            {activeSection === "agents" && <AgentsPage />}
+            {activeSection === "clients" && <ClientsPage />}
+            {activeSection === "requests" && <RequestsSection />}
+            {activeSection === "logs" && <LogsPage />}
         </div>
     );
 }
