@@ -2,24 +2,21 @@
   "name": "ease-chequ",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
   "scripts": {
-    "dev": "concurrently \"pnpm dev:backend\" \"pnpm dev:frontend\"",
-    "dev:backend": "node backend/src/index.js",
-    "dev:frontend": "next dev apps/web",
-    "test:api": "node scripts/test-api.js",
-    "test:all": "node scripts/test-all.js"
+    "dev": "pnpm dev:frontend",
+    "dev:frontend": "cd apps/web && next dev",
+    "build": "pnpm build:frontend",
+    "build:frontend": "cd apps/web && next build",
+    "start": "pnpm start:frontend",
+    "start:frontend": "cd apps/web && next start -p 3000"
   },
   "dependencies": {
-    "body-parser": "^1.20.2",
-    "concurrently": "^8.2.2",
-    "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "next": "14.2.33",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "concurrently": "^8.2.0",
+    "next": "14.2.3",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "pnpm": "^9.0.0"
+    "typescript": "^5.2.0"
   }
 }
