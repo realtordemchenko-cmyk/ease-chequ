@@ -2,105 +2,77 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-
-interface Agent {
-    id: number;
-    name: string;
-    role: string;
-}
+import { useMemo, useState } from "react";
+import { useAdmin, Agent } from "../../../context/AdminStore";
 
 export default function AgentsPage() {
-    const [agents, setAgents] = useState<Agent[]>([
-        { id: 1, name: "Alice", role: "Manager" },
-        { id: 2, name: "Bob", role: "Support" },
-        { id: 3, name: "Charlie", role: "Developer" },
-    ]);
+    const { agents, addAgent, updateAgent, deleteAgent, regenerateInviteLink } = useAdmin();
 
     const [search, setSearch] = useState("");
-    const [formData, setFormData] = useState({ id: 0, name: "", role: "" });
+    const [formData, setFormData] = useState<Agent>({
+        id: 0,
+        name: "",
+        email: "",
+        boardMemberNumber: "",
+        accessUntil: "",
+        inviteLink: "",
+    });
     const [isEditing, setIsEditing] = useState(false);
-
-    // Optional: support deep-link editing via ?edit=ID
-    useEffect(() => {
-        if (typeof window === "undefined") return;
-        const params = new URLSearchParams(window.location.search);
-        const editId = Number(params.get("edit"));
-        if (editId) {
-            const target = agents.find((a) => a.id === editId);
-            if (target) {
-                setFormData(target);
-                setIsEditing(true);
-            }
-        }
-    }, []);
 
     const filteredAgents = useMemo(
         () =>
             agents.filter(
                 (a) =>
                     a.name.toLowerCase().includes(search.toLowerCase()) ||
-                    a.role.toLowerCase().includes(search.toLowerCase())
+                    a.email.toLowerCase().includes(search.toLowerCase()) ||
+                    a.boardMemberNumber.toLowerCase().includes(search.toLowerCase())
             ),
         [agents, search]
     );
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.name.trim() || !formData.role.trim()) return;
+        const { name, email, boardMemberNumber } = formData;
+        if (!name.trim() || !email.trim() || !boardMemberNumber.trim()) return;
 
         if (isEditing) {
-            setAgents((prev) =>
-                prev.map((a) => (a.id === formData.id ? { ...formData } as Agent : a))
-            );
+            if (window.confirm(`Сохранить изменения для агента ${formData.name}?`)) {
+                updateAgent(formData);
+            }
         } else {
-            setAgents((prev) => [
-                ...prev,
-                { id: Date.now(), name: formData.name, role: formData.role },
-            ]);
+            const { id, inviteLink, ...payload } = formData;
+            addAgent(payload);
         }
 
-        setFormData({ id: 0, name: "", role: "" });
+        setFormData({ id: 0, name: "", email: "", boardMemberNumber: "", accessUntil: "", inviteLink: "" });
         setIsEditing(false);
-        // clear query param if present
-        if (typeof window !== "undefined") {
-            const url = new URL(window.location.href);
-            url.searchParams.delete("edit");
-            window.history.replaceState(null, "", url.toString());
-        }
     };
 
     const handleEdit = (agent: Agent) => {
-        setFormData(agent);
-        setIsEditing(true);
-        // set deep-link param for consistency
-        if (typeof window !== "undefined") {
-            const url = new URL(window.location.href);
-            url.searchParams.set("edit", String(agent.id));
-            window.history.replaceState(null, "", url.toString());
+        if (window.confirm(`Редактировать данные агента ${agent.name}?`)) {
+            setFormData(agent);
+            setIsEditing(true);
         }
     };
 
     const handleDelete = (id: number) => {
-        setAgents((prev) => prev.filter((a) => a.id !== id));
-        if (formData.id === id) {
-            setFormData({ id: 0, name: "", role: "" });
-            setIsEditing(false);
+        const target = agents.find((a) => a.id === id);
+        if (target && window.confirm(`Удалить агента ${target.name}?`)) {
+            deleteAgent(id);
+            if (formData.id === id) {
+                setFormData({ id: 0, name: "", email: "", boardMemberNumber: "", accessUntil: "", inviteLink: "" });
+                setIsEditing(false);
+            }
         }
     };
 
     const handleCancel = () => {
-        setFormData({ id: 0, name: "", role: "" });
+        setFormData({ id: 0, name: "", email: "", boardMemberNumber: "", accessUntil: "", inviteLink: "" });
         setIsEditing(false);
-        if (typeof window !== "undefined") {
-            const url = new URL(window.location.href);
-            url.searchParams.delete("edit");
-            window.history.replaceState(null, "", url.toString());
-        }
     };
 
     return (
-        <section style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 24 }}>
+        <section style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "24px" }}>
             {/* Form */}
             <div>
                 <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12 }}>
@@ -108,10 +80,10 @@ export default function AgentsPage() {
                 </h1>
                 <form
                     onSubmit={handleSubmit}
-                    style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 400 }}
+                    style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 520 }}
                 >
-                    <label>
-                        Name:
+                    <label style={{ display: "grid", gap: 6 }}>
+                        <span>Name:</span>
                         <input
                             type="text"
                             value={formData.name}
@@ -119,15 +91,37 @@ export default function AgentsPage() {
                             style={{ width: "100%", padding: 6 }}
                         />
                     </label>
-                    <label>
-                        Role:
+
+                    <label style={{ display: "grid", gap: 6 }}>
+                        <span>Email:</span>
                         <input
-                            type="text"
-                            value={formData.role}
-                            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             style={{ width: "100%", padding: 6 }}
                         />
                     </label>
+
+                    <label style={{ display: "grid", gap: 6 }}>
+                        <span>Board member #:</span>
+                        <input
+                            type="text"
+                            value={formData.boardMemberNumber}
+                            onChange={(e) => setFormData({ ...formData, boardMemberNumber: e.target.value })}
+                            style={{ width: "100%", padding: 6 }}
+                        />
+                    </label>
+
+                    <label style={{ display: "grid", gap: 6 }}>
+                        <span>Access until:</span>
+                        <input
+                            type="date"
+                            value={formData.accessUntil ?? ""}
+                            onChange={(e) => setFormData({ ...formData, accessUntil: e.target.value })}
+                            style={{ width: "100%", padding: 6 }}
+                        />
+                    </label>
+
                     <div style={{ display: "flex", gap: 8 }}>
                         <button
                             type="submit"
@@ -164,22 +158,22 @@ export default function AgentsPage() {
 
             {/* Table */}
             <div>
-                <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>
-                    Agents List
-                </h2>
-                <input
-                    type="text"
-                    placeholder="Search agents..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    style={{
-                        marginBottom: 12,
-                        padding: 6,
-                        width: "100%",
-                        border: `1px solid var(--card-border)`,
-                        background: "var(--input-bg)",
-                    }}
-                />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                    <h2 style={{ fontSize: 18, fontWeight: 600 }}>Agents List</h2>
+                    <input
+                        type="text"
+                        placeholder="Search agents..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        style={{
+                            padding: 6,
+                            width: "280px",
+                            border: `1px solid var(--card-border)`,
+                            background: "var(--input-bg)",
+                        }}
+                    />
+                </div>
+
                 <table
                     style={{
                         width: "100%",
@@ -191,71 +185,66 @@ export default function AgentsPage() {
                 >
                     <thead>
                         <tr>
-                            <th style={{ textAlign: "left", padding: 8, borderBottom: `1px solid var(--card-border)` }}>
-                                ID
-                            </th>
-                            <th style={{ textAlign: "left", padding: 8, borderBottom: `1px solid var(--card-border)` }}>
-                                Name
-                            </th>
-                            <th style={{ textAlign: "left", padding: 8, borderBottom: `1px solid var(--card-border)` }}>
-                                Role
-                            </th>
-                            <th style={{ textAlign: "left", padding: 8, borderBottom: `1px solid var(--card-border)` }}>
-                                Actions
-                            </th>
+                            <th style={{ textAlign: "left", padding: 8 }}>ID</th>
+                            <th style={{ textAlign: "left", padding: 8 }}>Name</th>
+                            <th style={{ textAlign: "left", padding: 8 }}>Email</th>
+                            <th style={{ textAlign: "left", padding: 8 }}>Board #</th>
+                            <th style={{ textAlign: "left", padding: 8 }}>Access until</th>
+                            <th style={{ textAlign: "left", padding: 8 }}>Invite Link</th>
+                            <th style={{ textAlign: "left", padding: 8 }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredAgents.map((agent) => (
                             <tr key={agent.id}>
-                                <td style={{ padding: 8, borderBottom: `1px solid var(--card-border)` }}>{agent.id}</td>
-                                <td style={{ padding: 8, borderBottom: `1px solid var(--card-border)` }}>{agent.name}</td>
-                                <td style={{ padding: 8, borderBottom: `1px solid var(--card-border)` }}>{agent.role}</td>
-                                <td style={{ padding: 8, borderBottom: `1px solid var(--card-border)`, display: "flex", gap: 8 }}>
+                                <td style={{ padding: 8 }}>{agent.id}</td>
+                                <td style={{ padding: 8 }}>{agent.name}</td>
+                                <td style={{ padding: 8 }}>{agent.email}</td>
+                                <td style={{ padding: 8 }}>{agent.boardMemberNumber}</td>
+                                <td style={{ padding: 8 }}>{agent.accessUntil ?? "—"}</td>
+                                <td style={{ padding: 8 }}>
+                                    <a href={agent.inviteLink} target="_blank" rel="noreferrer">
+                                        {agent.inviteLink}
+                                    </a>
+                                </td>
+                                <td style={{ padding: 8, display: "flex", gap: 8 }}>
                                     <button
                                         onClick={() => handleEdit(agent)}
-                                        style={{
-                                            padding: "4px 8px",
-                                            background: "var(--secondary-bg)",
-                                            color: "var(--secondary-text)",
-                                            border: "none",
-                                            borderRadius: 4,
-                                            cursor: "pointer",
-                                        }}
+                                        style={{ padding: "4px 8px", background: "var(--secondary-bg)", border: "none", borderRadius: 4 }}
                                     >
                                         Edit
                                     </button>
                                     <button
                                         onClick={() => handleDelete(agent.id)}
-                                        style={{
-                                            padding: "4px 8px",
-                                            background: "var(--danger-bg)",
-                                            color: "var(--danger-text)",
-                                            border: "none",
-                                            borderRadius: 4,
-                                            cursor: "pointer",
-                                        }}
+                                        style={{ padding: "4px 8px", background: "var(--danger-bg)", border: "none", borderRadius: 4 }}
                                     >
                                         Delete
                                     </button>
                                     <Link
                                         href={`/admin/agents/${agent.id}`}
-                                        style={{
-                                            padding: "4px 8px",
-                                            background: "var(--primary-bg)",
-                                            color: "var(--primary-text)",
-                                            borderRadius: 4,
-                                            textDecoration: "none",
-                                        }}
+                                        style={{ padding: "4px 8px", background: "var(--primary-bg)", borderRadius: 4, textDecoration: "none" }}
                                     >
                                         Open
                                     </Link>
+                                    <button
+                                        onClick={() => regenerateInviteLink(agent.id)}
+                                        style={{ padding: "4px 8px", background: "var(--secondary-bg)", border: "none", borderRadius: 4 }}
+                                    >
+                                        Regenerate Link
+                                    </button>
                                 </td>
                             </tr>
                         ))}
                         {filteredAgents.length === 0 && (
                             <tr>
-                                <td colSpan={4} style={{ padding: 12, textAlign: "center", color: "var(--text-muted)" }}>
+                                <td
+                                    colSpan={7}
+                                    style={{
+                                        padding: 12,
+                                        textAlign: "center",
+                                        color: "var(--text-muted)",
+                                    }}
+                                >
                                     No agents found
                                 </td>
                             </tr>

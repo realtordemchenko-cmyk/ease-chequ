@@ -1,55 +1,14 @@
 // apps/web/app/admin/requests/page.tsx
 "use client";
 
-import { useState } from "react";
-
-interface Request {
-    id: number;
-    client: string;
-    agent: string;
-    date: string;
-    status: "Pending" | "Approved" | "Rejected";
-}
-
-const mockRequests: Request[] = [
-    { id: 1, client: "Contoso Ltd.", agent: "Alice", date: "2025-10-01", status: "Pending" },
-    { id: 2, client: "Northwind Inc.", agent: "Bob", date: "2025-10-02", status: "Approved" },
-    { id: 3, client: "Fabrikam Co.", agent: "Charlie", date: "2025-10-03", status: "Rejected" },
-    { id: 4, client: "Adventure Works", agent: "Alice", date: "2025-10-04", status: "Pending" },
-];
+import { useAdmin } from "../../../context/AdminStore";
 
 export default function RequestsPage() {
-    const [statusFilter, setStatusFilter] = useState<"All" | "Pending" | "Approved" | "Rejected">("All");
-
-    const filtered = statusFilter === "All"
-        ? mockRequests
-        : mockRequests.filter((r) => r.status === statusFilter);
+    const { requests, approveRequest, rejectRequest, setRequestStatus } = useAdmin();
 
     return (
         <section>
             <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Requests</h1>
-
-            {/* Фильтры */}
-            <div style={{ marginBottom: 16, display: "flex", gap: 8 }}>
-                {["All", "Pending", "Approved", "Rejected"].map((s) => (
-                    <button
-                        key={s}
-                        onClick={() => setStatusFilter(s as any)}
-                        style={{
-                            padding: "6px 12px",
-                            borderRadius: 4,
-                            border: "none",
-                            cursor: "pointer",
-                            background: statusFilter === s ? "var(--primary-bg)" : "var(--secondary-bg)",
-                            color: statusFilter === s ? "var(--primary-text)" : "var(--secondary-text)",
-                        }}
-                    >
-                        {s}
-                    </button>
-                ))}
-            </div>
-
-            {/* Таблица */}
             <table
                 style={{
                     width: "100%",
@@ -61,26 +20,111 @@ export default function RequestsPage() {
             >
                 <thead>
                     <tr>
-                        <th style={{ textAlign: "left", padding: 8, borderBottom: `1px solid var(--card-border)` }}>ID</th>
-                        <th style={{ textAlign: "left", padding: 8, borderBottom: `1px solid var(--card-border)` }}>Client</th>
-                        <th style={{ textAlign: "left", padding: 8, borderBottom: `1px solid var(--card-border)` }}>Agent</th>
-                        <th style={{ textAlign: "left", padding: 8, borderBottom: `1px solid var(--card-border)` }}>Date</th>
-                        <th style={{ textAlign: "left", padding: 8, borderBottom: `1px solid var(--card-border)` }}>Status</th>
+                        <th style={{ textAlign: "left", padding: 8 }}>ID</th>
+                        <th style={{ textAlign: "left", padding: 8 }}>Type</th>
+                        <th style={{ textAlign: "left", padding: 8 }}>Name</th>
+                        <th style={{ textAlign: "left", padding: 8 }}>Email</th>
+                        <th style={{ textAlign: "left", padding: 8 }}>Board #</th>
+                        <th style={{ textAlign: "left", padding: 8 }}>Date</th>
+                        <th style={{ textAlign: "left", padding: 8 }}>Status</th>
+                        <th style={{ textAlign: "left", padding: 8 }}>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {filtered.map((r) => (
+                    {requests.map((r) => (
                         <tr key={r.id}>
-                            <td style={{ padding: 8, borderBottom: `1px solid var(--card-border)` }}>{r.id}</td>
-                            <td style={{ padding: 8, borderBottom: `1px solid var(--card-border)` }}>{r.client}</td>
-                            <td style={{ padding: 8, borderBottom: `1px solid var(--card-border)` }}>{r.agent}</td>
-                            <td style={{ padding: 8, borderBottom: `1px solid var(--card-border)` }}>{r.date}</td>
-                            <td style={{ padding: 8, borderBottom: `1px solid var(--card-border)` }}>{r.status}</td>
+                            <td style={{ padding: 8 }}>{r.id}</td>
+                            <td style={{ padding: 8 }}>{r.type}</td>
+                            <td style={{ padding: 8 }}>{r.name}</td>
+                            <td style={{ padding: 8 }}>{r.email ?? "—"}</td>
+                            <td style={{ padding: 8 }}>{r.boardMemberNumber ?? "—"}</td>
+                            <td style={{ padding: 8 }}>{r.date}</td>
+                            <td style={{ padding: 8 }}>{r.status}</td>
+                            <td style={{ padding: 8, display: "flex", gap: 8 }}>
+                                {r.status === "Pending" && (
+                                    <>
+                                        <button
+                                            onClick={() => approveRequest(r.id)}
+                                            style={{
+                                                padding: "4px 8px",
+                                                background: "var(--primary-bg)",
+                                                color: "var(--primary-text)",
+                                                border: "none",
+                                                borderRadius: 4,
+                                                cursor: "pointer",
+                                            }}
+                                        >
+                                            Approve
+                                        </button>
+                                        <button
+                                            onClick={() => rejectRequest(r.id)}
+                                            style={{
+                                                padding: "4px 8px",
+                                                background: "var(--danger-bg)",
+                                                color: "var(--danger-text)",
+                                                border: "none",
+                                                borderRadius: 4,
+                                                cursor: "pointer",
+                                            }}
+                                        >
+                                            Reject
+                                        </button>
+                                    </>
+                                )}
+                                {r.status === "Rejected" && (
+                                    <>
+                                        <button
+                                            onClick={() => approveRequest(r.id)}
+                                            style={{
+                                                padding: "4px 8px",
+                                                background: "var(--primary-bg)",
+                                                color: "var(--primary-text)",
+                                                border: "none",
+                                                borderRadius: 4,
+                                                cursor: "pointer",
+                                            }}
+                                        >
+                                            Approve Again
+                                        </button>
+                                        <button
+                                            onClick={() => setRequestStatus(r.id, "Pending")}
+                                            style={{
+                                                padding: "4px 8px",
+                                                background: "var(--warning-bg)",
+                                                color: "var(--warning-text)",
+                                                border: "none",
+                                                borderRadius: 4,
+                                                cursor: "pointer",
+                                            }}
+                                        >
+                                            Reset to Pending
+                                        </button>
+                                    </>
+                                )}
+                                {r.status === "Approved" && (
+                                    <button
+                                        onClick={() => setRequestStatus(r.id, "Pending")}
+                                        style={{
+                                            padding: "4px 8px",
+                                            background: "var(--warning-bg)",
+                                            color: "var(--warning-text)",
+                                            border: "none",
+                                            borderRadius: 4,
+                                            cursor: "pointer",
+                                        }}
+                                    >
+                                        Reset to Pending
+                                    </button>
+                                )}
+                            </td>
                         </tr>
                     ))}
-                    {filtered.length === 0 && (
+                    {requests.length === 0 && (
                         <tr>
-                            <td colSpan={5} style={{ padding: 12, textAlign: "center", color: "var(--text-muted)" }}>
+                            <td
+                                colSpan={8}
+                                style={{ padding: 12, textAlign: "center", color: "var(--text-muted)" }}
+                            >
                                 No requests found
                             </td>
                         </tr>

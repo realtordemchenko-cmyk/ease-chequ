@@ -15,19 +15,34 @@
 
 ## Admin pages structure
 
+### Layout
+- `apps/web/components/layout/Sidebar.tsx` — боковая панель навигации (Dashboard, Agents, Requests, Logs, Settings).
+- `apps/web/components/layout/Topbar.tsx` — верхняя панель с action‑кнопками.
+
+### Dashboard
+- `apps/web/app/admin/dashboard/page.tsx` — карточки с ключевыми метриками (агенты, запросы, логи, ошибки).
+
 ### Agents
-- `apps/web/app/admin/agents/page.tsx` — контейнер страницы.
-- `apps/web/components/agents/AgentForm.tsx` — форма добавления агента.
-- (план) `apps/web/components/agents/AgentTable.tsx` — таблица агентов.
-- (план) `apps/web/components/agents/AgentEditForm.tsx` — форма редактирования.
-- (план) `apps/web/components/agents/AgentDeleteModal.tsx` — модалка удаления.
+- `apps/web/app/admin/agents/page.tsx` — список агентов + CRUD (добавление, редактирование, удаление, поиск, переход к деталям).
+- `apps/web/app/admin/agents/[id]/page.tsx` — страница агента: карточка + список прикреплённых клиентов.
+- `apps/web/components/agents/AgentForm.tsx` — форма добавления/редактирования агента.
+- `apps/web/components/agents/AgentTable.tsx` — таблица агентов (используется внутри `page.tsx`).
+
+### Clients
+- `apps/web/app/admin/clients/[id]/page.tsx` — страница клиента: карточка клиента + история активности, возможность перепривязки к агенту.
+
+### Requests
+- `apps/web/app/admin/requests/page.tsx` — таблица входящих запросов с фильтрацией по статусу и действиями (Approve, Reject, Reset to Pending, повторное одобрение).
 
 ### Logs
-- `apps/web/app/admin/logs/page.tsx` — контейнер страницы.
+- `apps/web/app/admin/logs/page.tsx` — журнал событий с фильтрацией по типу и поиском по сообщению.
 - (план) `apps/web/components/logs/LogsFilters.tsx` — фильтры.
 - (план) `apps/web/components/logs/LogsTable.tsx` — таблица.
 - (план) `apps/web/components/logs/LogsPagination.tsx` — пагинация.
 - (план) `apps/web/components/logs/LogsExport.tsx` — экспорт.
+
+### Settings
+- `apps/web/app/admin/settings/page.tsx` — (пока заглушка, планируется конфигурация системы).
 
 ---
 
@@ -42,6 +57,10 @@
 
 ## Changelog
 
+- [2025‑10‑08] Added: Requests workflow (`approveRequest`, `rejectRequest`, `setRequestStatus`) в `AdminStore.tsx`; обновлён `requests/page.tsx` с кнопками Approve/Reject/Reset.
+- [2025‑10‑08] Added: `clients/[id]/page.tsx` для карточки клиента и перепривязки к агенту.
+- [2025‑10‑08] Refactor: `AdminStore.tsx` теперь хранит agents, clients, requests, logs в localStorage; добавлены моки для всех сущностей.
+- [2025‑10‑08] Fix: гарантированная инициализация мок‑данных даже при пустых массивов в localStorage.
 - [2025‑10‑07] Added: created `docs/admin/FILES_ADMIN.md`; recorded access model and admin pages structure.
 - [2025‑10‑07] Refactor: extracted add‑agent form into `apps/web/components/agents/AgentForm.tsx`; updated `agents/page.tsx` to import the component. Added validation in form (email, date, membership).
 - [2025‑10‑07] Fix: aligned dependency baseline (Next.js 14.2.3 + React 18.2.0); removed React 18.3.1 conflict; project builds and runs without `useReducer` error.

@@ -7,26 +7,31 @@
 
 ## 📂 Основные файлы
 
-- **app/admin/layout.tsx**  
+- **apps/web/app/admin/layout.tsx**  
   - Серверный layout.  
   - Экспортирует только `metadata` и `default`.  
   - Подключает клиентский компонент `AdminLayoutClient`.  
   - ❌ Запрещено: `"use client"`, `export const styles`, любая логика навигации.  
 
-- **app/admin/AdminLayoutClient.tsx**  
+- **apps/web/app/admin/AdminLayoutClient.tsx**  
   - Клиентский компонент.  
-  - Содержит каркас админки (основная сетка, подключение Sidebar и Footer).  
+  - Содержит каркас админки (основная сетка, подключение Sidebar и Topbar/Footer).  
   - Отвечает за сборку UI из отдельных компонентов.  
   - Все изменения дизайна делаются через подключаемые компоненты.  
 
-- **app/admin/components/Sidebar.tsx**  
+- **apps/web/components/layout/Sidebar.tsx**  
   - Клиентский компонент.  
   - Содержит логику и стили боковой панели (sidebar).  
   - Отвечает за навигацию между разделами админки.  
 
-- **app/admin/components/Footer.tsx**  
+- **apps/web/components/layout/Topbar.tsx**  
   - Клиентский компонент.  
-  - Содержит нижний колонтитул (footer).  
+  - Верхняя панель с action‑кнопками.  
+  - Отвечает за быстрый доступ к действиям и настройкам.  
+
+- **apps/web/components/layout/Footer.tsx**  
+  - Клиентский компонент.  
+  - Нижний колонтитул (footer).  
   - Отвечает за отображение копирайта и вспомогательной информации.  
 
 ---
@@ -36,15 +41,15 @@
 1. **Разделение обязанностей**  
    - `layout.tsx` — только серверная оболочка.  
    - `AdminLayoutClient.tsx` — каркас, собирающий дизайн.  
-   - `Sidebar.tsx` и `Footer.tsx` — отдельные UI‑компоненты.  
+   - `Sidebar.tsx`, `Topbar.tsx`, `Footer.tsx` — отдельные UI‑компоненты.  
 
 2. **Запрещённые действия**  
    - Не добавлять `"use client"` в `layout.tsx`.  
    - Не экспортировать `styles` или другие объекты из `layout.tsx`.  
-   - Не дублировать `Sidebar.tsx` и `Footer.tsx` в других местах.  
+   - Не дублировать `Sidebar.tsx`, `Topbar.tsx`, `Footer.tsx` в других местах.  
 
 3. **Изменения дизайна**  
-   - Все новые UI‑компоненты создаются в `app/admin/components/`.  
+   - Все новые UI‑компоненты создаются в `apps/web/components/layout/`.  
    - Подключение новых компонентов осуществляется через `AdminLayoutClient.tsx`.  
 
 4. **Документация**  
@@ -54,3 +59,14 @@
 ---
 
 ## 📂 Текущая структура
+apps/web/ └── app/ └── admin/ ├── layout.tsx              # Серверный layout ├── AdminLayoutClient.tsx   # Клиентский каркас └── components/ └── layout/ ├── Sidebar.tsx             # Боковая панель ├── Topbar.tsx              # Верхняя панель └── Footer.tsx              # Нижний колонтитул
+
+
+---
+
+## 📌 Итог
+
+- `layout.tsx` = чистый серверный контейнер.  
+- `AdminLayoutClient.tsx` = каркас, собирающий дизайн.  
+- `Sidebar.tsx`, `Topbar.tsx`, `Footer.tsx` = отдельные UI‑компоненты.  
+- Все изменения фиксируются в `docs/admin/DESIGN_ADMIN.md`.  

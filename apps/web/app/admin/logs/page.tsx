@@ -1,39 +1,28 @@
 // apps/web/app/admin/logs/page.tsx
 "use client";
 
-import { useState } from "react";
-
-interface LogEntry {
-    id: number;
-    date: string;
-    type: "System" | "Agent" | "Client" | "Error";
-    message: string;
-}
-
-const mockLogs: LogEntry[] = [
-    { id: 1, date: "2025-10-01 09:15", type: "System", message: "Server restarted successfully" },
-    { id: 2, date: "2025-10-01 10:05", type: "Agent", message: "Alice created new client Contoso Ltd." },
-    { id: 3, date: "2025-10-01 11:20", type: "Client", message: "Northwind Inc. submitted a request" },
-    { id: 4, date: "2025-10-01 11:45", type: "Error", message: "Failed to process request #42" },
-    { id: 5, date: "2025-10-02 08:30", type: "Agent", message: "Bob updated client Fabrikam Co." },
-    { id: 6, date: "2025-10-02 09:00", type: "System", message: "Daily backup completed" },
-];
+import { useState, useMemo } from "react";
+import { useAdmin } from "../../../context/AdminStore";
 
 export default function LogsPage() {
+    const { logs } = useAdmin();
     const [typeFilter, setTypeFilter] = useState<"All" | "System" | "Agent" | "Client" | "Error">("All");
     const [search, setSearch] = useState("");
 
-    const filtered = mockLogs.filter((log) => {
-        const matchesType = typeFilter === "All" || log.type === typeFilter;
-        const matchesSearch = log.message.toLowerCase().includes(search.toLowerCase());
-        return matchesType && matchesSearch;
-    });
+    const filtered = useMemo(() => {
+        return logs.filter((log) => {
+            const matchesType = typeFilter === "All" || log.type === typeFilter;
+            const matchesSearch =
+                log.message.toLowerCase().includes(search.toLowerCase()) ||
+                log.date.toLowerCase().includes(search.toLowerCase());
+            return matchesType && matchesSearch;
+        });
+    }, [logs, typeFilter, search]);
 
     return (
         <section>
             <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Logs</h1>
 
-            {/* Фильтры */}
             <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
                 {["All", "System", "Agent", "Client", "Error"].map((t) => (
                     <button
@@ -53,7 +42,6 @@ export default function LogsPage() {
                 ))}
             </div>
 
-            {/* Поиск */}
             <input
                 type="text"
                 placeholder="Search logs..."
@@ -68,7 +56,6 @@ export default function LogsPage() {
                 }}
             />
 
-            {/* Таблица */}
             <table
                 style={{
                     width: "100%",
