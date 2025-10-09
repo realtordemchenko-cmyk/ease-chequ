@@ -102,3 +102,4 @@
    Remove-Item -Recurse -Force "node_modules"
    Remove-Item -Recurse -Force "apps\web\node_modules"
    Remove-Item -Recurse -Force "apps\web\.next"
+   git checkout admin-sync-2025-10-08
