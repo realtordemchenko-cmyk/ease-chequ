@@ -70,3 +70,15 @@ apps/web/ └── app/ └── admin/ ├── layout.tsx              # С
 - `AdminLayoutClient.tsx` = каркас, собирающий дизайн.  
 - `Sidebar.tsx`, `Topbar.tsx`, `Footer.tsx` = отдельные UI‑компоненты.  
 - Все изменения фиксируются в `docs/admin/DESIGN_ADMIN.md`.  
+
+### 🧩 ClientsPage UI
+
+- Таблица клиентов с колонками: имя, email, агент, статус.
+- В будущем планируется добавить dropdown для перепривязки клиента к другому агенту.
+- UI построен с возможностью модификации: компоненты обёрнуты в расширяемые блоки.
+
+### 🧩 RequestsPage UI
+
+- Таблица заявок с колонками: ID, Type, Name, Email, Board #, Date, Status, Actions.
+- Статус отображается с цветовой меткой: серый (Pending), зелёный (Approved), красный (Rejected).
+- Компонент `RequestStatusBadge.tsx` отвечает за визуализацию статуса.

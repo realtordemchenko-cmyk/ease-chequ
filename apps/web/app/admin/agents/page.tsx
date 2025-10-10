@@ -1,10 +1,9 @@
-// apps/web/app/admin/agents/page.tsx
 "use client";
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useAdmin, Agent } from "../../../context/AdminStore";
-
+import { useAdmin } from "../../../context/AdminStore";
+import { Agent } from "../../../types/Agent";
 export default function AgentsPage() {
     const { agents, addAgent, updateAgent, deleteAgent, regenerateInviteLink } = useAdmin();
 
@@ -16,6 +15,7 @@ export default function AgentsPage() {
         boardMemberNumber: "",
         accessUntil: "",
         inviteLink: "",
+        status: "Pending",
     });
     const [isEditing, setIsEditing] = useState(false);
 
@@ -36,20 +36,28 @@ export default function AgentsPage() {
         if (!name.trim() || !email.trim() || !boardMemberNumber.trim()) return;
 
         if (isEditing) {
-            if (window.confirm(`Сохранить изменения для агента ${formData.name}?`)) {
+            if (window.confirm(`Save changes for agent ${formData.name}?`)) {
                 updateAgent(formData);
             }
         } else {
             const { id, inviteLink, ...payload } = formData;
-            addAgent(payload);
+            addAgent({ ...payload, status: formData.status });
         }
 
-        setFormData({ id: 0, name: "", email: "", boardMemberNumber: "", accessUntil: "", inviteLink: "" });
+        setFormData({
+            id: 0,
+            name: "",
+            email: "",
+            boardMemberNumber: "",
+            accessUntil: "",
+            inviteLink: "",
+            status: "Pending",
+        });
         setIsEditing(false);
     };
 
     const handleEdit = (agent: Agent) => {
-        if (window.confirm(`Редактировать данные агента ${agent.name}?`)) {
+        if (window.confirm(`Are you sure you want to edit the details of ${agent.name}?`)) {
             setFormData(agent);
             setIsEditing(true);
         }
@@ -57,17 +65,33 @@ export default function AgentsPage() {
 
     const handleDelete = (id: number) => {
         const target = agents.find((a) => a.id === id);
-        if (target && window.confirm(`Удалить агента ${target.name}?`)) {
+        if (target && window.confirm(`Are you sure you want to delete ${target.name}?`)) {
             deleteAgent(id);
             if (formData.id === id) {
-                setFormData({ id: 0, name: "", email: "", boardMemberNumber: "", accessUntil: "", inviteLink: "" });
+                setFormData({
+                    id: 0,
+                    name: "",
+                    email: "",
+                    boardMemberNumber: "",
+                    accessUntil: "",
+                    inviteLink: "",
+                    status: "Pending",
+                });
                 setIsEditing(false);
             }
         }
     };
 
     const handleCancel = () => {
-        setFormData({ id: 0, name: "", email: "", boardMemberNumber: "", accessUntil: "", inviteLink: "" });
+        setFormData({
+            id: 0,
+            name: "",
+            email: "",
+            boardMemberNumber: "",
+            accessUntil: "",
+            inviteLink: "",
+            status: "Pending",
+        });
         setIsEditing(false);
     };
 
@@ -78,77 +102,44 @@ export default function AgentsPage() {
                 <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12 }}>
                     {isEditing ? "Edit Agent" : "Add Agent"}
                 </h1>
-                <form
-                    onSubmit={handleSubmit}
-                    style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 520 }}
-                >
-                    <label style={{ display: "grid", gap: 6 }}>
-                        <span>Name:</span>
-                        <input
-                            type="text"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            style={{ width: "100%", padding: 6 }}
-                        />
-                    </label>
-
-                    <label style={{ display: "grid", gap: 6 }}>
-                        <span>Email:</span>
-                        <input
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            style={{ width: "100%", padding: 6 }}
-                        />
-                    </label>
-
-                    <label style={{ display: "grid", gap: 6 }}>
-                        <span>Board member #:</span>
-                        <input
-                            type="text"
-                            value={formData.boardMemberNumber}
-                            onChange={(e) => setFormData({ ...formData, boardMemberNumber: e.target.value })}
-                            style={{ width: "100%", padding: 6 }}
-                        />
-                    </label>
-
-                    <label style={{ display: "grid", gap: 6 }}>
-                        <span>Access until:</span>
-                        <input
-                            type="date"
-                            value={formData.accessUntil ?? ""}
-                            onChange={(e) => setFormData({ ...formData, accessUntil: e.target.value })}
-                            style={{ width: "100%", padding: 6 }}
-                        />
-                    </label>
-
+                <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    <input
+                        type="text"
+                        placeholder="Name"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    />
+                    <input
+                        type="email"
+                        placeholder="Email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    />
+                    <input
+                        type="text"
+                        placeholder="Board Member #"
+                        value={formData.boardMemberNumber}
+                        onChange={(e) => setFormData({ ...formData, boardMemberNumber: e.target.value })}
+                    />
+                    <input
+                        type="date"
+                        placeholder="Access Until"
+                        value={formData.accessUntil}
+                        onChange={(e) => setFormData({ ...formData, accessUntil: e.target.value })}
+                    />
+                    <select
+                        value={formData.status}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value as Agent["status"] })}
+                    >
+                        <option value="Pending">Pending</option>
+                        <option value="Active">Active</option>
+                        <option value="Suspended">Suspended</option>
+                        <option value="Expired">Expired</option>
+                    </select>
                     <div style={{ display: "flex", gap: 8 }}>
-                        <button
-                            type="submit"
-                            style={{
-                                padding: "8px 12px",
-                                background: "var(--primary-bg)",
-                                color: "var(--primary-text)",
-                                border: "none",
-                                borderRadius: 4,
-                                cursor: "pointer",
-                            }}
-                        >
-                            {isEditing ? "Update" : "Save"}
-                        </button>
+                        <button type="submit">{isEditing ? "Save" : "Add"}</button>
                         {isEditing && (
-                            <button
-                                type="button"
-                                onClick={handleCancel}
-                                style={{
-                                    padding: "8px 12px",
-                                    background: "var(--secondary-bg)",
-                                    color: "var(--secondary-text)",
-                                    border: "none",
-                                    borderRadius: 4,
-                                    cursor: "pointer",
-                                }}
-                            >
+                            <button type="button" onClick={handleCancel}>
                                 Cancel
                             </button>
                         )}
@@ -158,22 +149,7 @@ export default function AgentsPage() {
 
             {/* Table */}
             <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                    <h2 style={{ fontSize: 18, fontWeight: 600 }}>Agents List</h2>
-                    <input
-                        type="text"
-                        placeholder="Search agents..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        style={{
-                            padding: 6,
-                            width: "280px",
-                            border: `1px solid var(--card-border)`,
-                            background: "var(--input-bg)",
-                        }}
-                    />
-                </div>
-
+                <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Agents</h2>
                 <table
                     style={{
                         width: "100%",
@@ -189,13 +165,14 @@ export default function AgentsPage() {
                             <th style={{ textAlign: "left", padding: 8 }}>Name</th>
                             <th style={{ textAlign: "left", padding: 8 }}>Email</th>
                             <th style={{ textAlign: "left", padding: 8 }}>Board #</th>
-                            <th style={{ textAlign: "left", padding: 8 }}>Access until</th>
+                            <th style={{ textAlign: "left", padding: 8 }}>Access Until</th>
                             <th style={{ textAlign: "left", padding: 8 }}>Invite Link</th>
-                            <th style={{ textAlign: "left", padding: 8 }}>Actions</th>
+                            <th style={{ textAlign: "left", padding: 8 }}>Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredAgents.map((agent) => (
+
                             <tr key={agent.id}>
                                 <td style={{ padding: 8 }}>{agent.id}</td>
                                 <td style={{ padding: 8 }}>{agent.name}</td>
@@ -206,29 +183,55 @@ export default function AgentsPage() {
                                     <a href={agent.inviteLink} target="_blank" rel="noreferrer">
                                         {agent.inviteLink}
                                     </a>
+
                                 </td>
+                                <td style={{ padding: 8 }}>{agent.status ?? "—"}</td>
                                 <td style={{ padding: 8, display: "flex", gap: 8 }}>
                                     <button
                                         onClick={() => handleEdit(agent)}
-                                        style={{ padding: "4px 8px", background: "var(--secondary-bg)", border: "none", borderRadius: 4 }}
+                                        style={{
+                                            padding: "4px 8px",
+                                            background: "var(--secondary-bg)",
+                                            border: "none",
+                                            borderRadius: 4,
+                                            cursor: "pointer",
+                                        }}
                                     >
                                         Edit
                                     </button>
                                     <button
                                         onClick={() => handleDelete(agent.id)}
-                                        style={{ padding: "4px 8px", background: "var(--danger-bg)", border: "none", borderRadius: 4 }}
+                                        style={{
+                                            padding: "4px 8px",
+                                            background: "var(--danger-bg)",
+                                            border: "none",
+                                            borderRadius: 4,
+                                            cursor: "pointer",
+                                        }}
                                     >
                                         Delete
                                     </button>
                                     <Link
                                         href={`/admin/agents/${agent.id}`}
-                                        style={{ padding: "4px 8px", background: "var(--primary-bg)", borderRadius: 4, textDecoration: "none" }}
+                                        style={{
+                                            padding: "4px 8px",
+                                            background: "var(--primary-bg)",
+                                            borderRadius: 4,
+                                            textDecoration: "none",
+                                            color: "white",
+                                        }}
                                     >
                                         Open
                                     </Link>
                                     <button
                                         onClick={() => regenerateInviteLink(agent.id)}
-                                        style={{ padding: "4px 8px", background: "var(--secondary-bg)", border: "none", borderRadius: 4 }}
+                                        style={{
+                                            padding: "4px 8px",
+                                            background: "var(--secondary-bg)",
+                                            border: "none",
+                                            borderRadius: 4,
+                                            cursor: "pointer",
+                                        }}
                                     >
                                         Regenerate Link
                                     </button>
@@ -238,7 +241,7 @@ export default function AgentsPage() {
                         {filteredAgents.length === 0 && (
                             <tr>
                                 <td
-                                    colSpan={7}
+                                    colSpan={8}
                                     style={{
                                         padding: 12,
                                         textAlign: "center",

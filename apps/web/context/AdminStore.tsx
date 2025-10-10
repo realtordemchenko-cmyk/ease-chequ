@@ -2,16 +2,10 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { Agent } from "../types/Agent";
 
 // --- Types ---
-export interface Agent {
-    id: number;
-    name: string;
-    email: string;
-    boardMemberNumber: string;
-    accessUntil?: string;
-    inviteLink: string;
-}
+
 
 export interface Client {
     id: number;
@@ -205,13 +199,40 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
     // --- Agents ---
     const addAgent = (agent: Omit<Agent, "id" | "inviteLink">) => {
+        // Устойчивый вариант без побочных эффектов внутри setState:
+        // - проверка дубликатов
+        // - единичный setAgents
+        // - логирование после обновления
+        if (!agent.boardMemberNumber) {
+            addLog({ type: "Agent", message: "Add skipped: invalid boardMemberNumber" });
+            return;
+        }
+
+        const duplicate = agents.some((a) => a.boardMemberNumber === agent.boardMemberNumber);
+        if (duplicate) {
+            addLog({ type: "Agent", message: `Add skipped: Agent ${agent.boardMemberNumber} already exists` });
+            return;
+        }
+
         const inviteLink = generateInviteLink(agent.boardMemberNumber);
-        const newAgent: Agent = { ...agent, id: Date.now(), inviteLink };
+        const newAgent: Agent = {
+            ...agent,
+            id: Date.now(),
+            inviteLink,
+            status: "Pending", // ручной контроль доступа
+        };
+
         setAgents((prev) => [...prev, newAgent]);
         addLog({ type: "Agent", message: `Agent added: ${newAgent.name}` });
     };
 
     const updateAgent = (agent: Agent) => {
+        const exists = agents.some((a) => a.id === agent.id);
+        if (!exists) {
+            addLog({ type: "Agent", message: `Update skipped: agent ${agent.id} not found` });
+            return;
+        }
+
         setAgents((prev) => prev.map((a) => (a.id === agent.id ? agent : a)));
         addLog({ type: "Agent", message: `Agent updated: ${agent.name}` });
     };
@@ -223,16 +244,19 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     };
 
     const regenerateInviteLink = (id: number) => {
-        setAgents((prev) =>
-            prev.map((a) =>
-                a.id === id ? { ...a, inviteLink: generateInviteLink(a.boardMemberNumber) } : a
-            )
-        );
         const target = agents.find((a) => a.id === id);
-        if (target) {
-            addLog({ type: "Agent", message: `Invite link regenerated for ${target.name}` });
+        if (!target) {
+            addLog({ type: "Agent", message: `Invite regeneration skipped: agent ${id} not found` });
+            return;
         }
+
+        const updated = { ...target, inviteLink: generateInviteLink(target.boardMemberNumber) };
+        setAgents((prev) => prev.map((a) => (a.id === id ? updated : a)));
+
+        // Логируем по факту, без временных переменных с неочевидным типом
+        addLog({ type: "Agent", message: `Invite link regenerated for ${updated.name}` });
     };
+    // --- Clients ---
 
     // --- Clients ---
     const attachClient = (clientId: number, agentId: number) => {
@@ -251,35 +275,50 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
     // --- Requests workflow ---
     const setRequestStatus = (id: number, status: "Pending" | "Approved" | "Rejected") => {
-        setRequests((prev) =>
-            prev.map((r) => (r.id === id ? { ...r, status } : r))
-        );
-        const req = requests.find((r) => r.id === id);
-        if (!req) return;
+        setRequests((prev) => {
+            const updated = prev.map((r) => (r.id === id ? { ...r, status } : r));
+            const req = prev.find((r) => r.id === id); // ← используем prev, не requests
 
-        if (status === "Approved") {
-            if (req.type === "Agent" && req.email && req.boardMemberNumber) {
-                addAgent({
-                    name: req.name,
-                    email: req.email,
-                    boardMemberNumber: req.boardMemberNumber,
-                    accessUntil: "2025-12-31",
-                });
-                addLog({ type: "Agent", message: `Request approved: Agent ${req.name} added` });
-            } else if (req.type === "Client") {
-                setClients((prev) => [
-                    ...prev,
-                    { id: Date.now(), name: req.name, status: "Active" },
-                ]);
-                addLog({ type: "Client", message: `Request approved: Client ${req.name} added` });
+            if (req) {
+                if (status === "Approved") {
+                    if (req.type === "Agent" && req.email && req.boardMemberNumber) {
+                        // Проверка: агент с таким boardMemberNumber уже существует?
+                        const exists = agents.some(
+                            (a) => a.boardMemberNumber === req.boardMemberNumber
+                        );
+
+                        if (!exists) {
+                            addAgent({
+                                name: req.name,
+                                email: req.email,
+                                boardMemberNumber: req.boardMemberNumber,
+                                accessUntil: "2025-12-31",
+                            });
+                            addLog({ type: "Agent", message: `Request approved: Agent ${req.name} added` });
+                        } else {
+                            addLog({ type: "Agent", message: `Request approved: Agent ${req.name} already exists` });
+                        }
+                    } else if (req.type === "Client") {
+                        const exists = clients.some((c) => c.name === req.name); if (!exists) {
+                            setClients((prev) => [
+                                ...prev,
+                                { id: Date.now(), name: req.name, status: "Active" },
+                            ]);
+                            addLog({ type: "Client", message: `Request approved: Client ${req.name} added` });
+                        } else {
+                            addLog({ type: "Client", message: `Request approved: Client ${req.name} already exists` });
+                        }
+                    }
+                } else if (status === "Rejected") {
+                    addLog({ type: req.type, message: `${req.type} request rejected: ${req.name}` });
+                } else if (status === "Pending") {
+                    addLog({ type: req.type, message: `Request reset to Pending: ${req.name}` });
+                }
             }
-        } else if (status === "Rejected") {
-            addLog({ type: req.type, message: `${req.type} request rejected: ${req.name}` });
-        } else if (status === "Pending") {
-            addLog({ type: req.type, message: `Request reset to Pending: ${req.name}` });
-        }
-    };
 
+            return updated;
+        });
+    };
     return (
         <AdminContext.Provider
             value={{

@@ -2,9 +2,10 @@
 "use client";
 
 import { useAdmin } from "../../../context/AdminStore";
+import { RequestStatusBadge } from "@/components/requests/RequestStatusBadge";
 
 export default function RequestsPage() {
-    const { requests, approveRequest, rejectRequest, setRequestStatus } = useAdmin();
+    const { requests, setRequestStatus } = useAdmin();
 
     return (
         <section>
@@ -27,104 +28,46 @@ export default function RequestsPage() {
                         <th style={{ textAlign: "left", padding: 8 }}>Board #</th>
                         <th style={{ textAlign: "left", padding: 8 }}>Date</th>
                         <th style={{ textAlign: "left", padding: 8 }}>Status</th>
-                        <th style={{ textAlign: "left", padding: 8 }}>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {requests.map((r) => (
-                        <tr key={r.id}>
-                            <td style={{ padding: 8 }}>{r.id}</td>
-                            <td style={{ padding: 8 }}>{r.type}</td>
-                            <td style={{ padding: 8 }}>{r.name}</td>
-                            <td style={{ padding: 8 }}>{r.email ?? "—"}</td>
-                            <td style={{ padding: 8 }}>{r.boardMemberNumber ?? "—"}</td>
-                            <td style={{ padding: 8 }}>{r.date}</td>
-                            <td style={{ padding: 8 }}>{r.status}</td>
-                            <td style={{ padding: 8, display: "flex", gap: 8 }}>
-                                {r.status === "Pending" && (
-                                    <>
-                                        <button
-                                            onClick={() => approveRequest(r.id)}
-                                            style={{
-                                                padding: "4px 8px",
-                                                background: "var(--primary-bg)",
-                                                color: "var(--primary-text)",
-                                                border: "none",
+                    {requests.map((r) => {
+                        const status = r.status.toLowerCase();
+                        return (
+                            <tr key={r.id}>
+                                <td style={{ padding: 8 }}>{r.id}</td>
+                                <td style={{ padding: 8 }}>{r.type}</td>
+                                <td style={{ padding: 8 }}>{r.name}</td>
+                                <td style={{ padding: 8 }}>{r.email ?? "—"}</td>
+                                <td style={{ padding: 8 }}>{r.boardMemberNumber ?? "—"}</td>
+                                <td style={{ padding: 8 }}>{r.date}</td>
+                                <td style={{ padding: 8 }}>
+                                    <RequestStatusBadge status={status as "pending" | "approved" | "rejected"} />
+                                    <div style={{ marginTop: 6 }}>
+                                        <select
+                                            value={r.status}
+                                            onChange={(e) =>
+                                                setRequestStatus(r.id, e.target.value as "Pending" | "Approved" | "Rejected")
+                                            } style={{
+                                                padding: "4px 6px",
                                                 borderRadius: 4,
-                                                cursor: "pointer",
+                                                border: "1px solid var(--card-border)",
+                                                background: "var(--card-bg)",
+                                                color: "var(--secondary-text)",
                                             }}
                                         >
-                                            Approve
-                                        </button>
-                                        <button
-                                            onClick={() => rejectRequest(r.id)}
-                                            style={{
-                                                padding: "4px 8px",
-                                                background: "var(--danger-bg)",
-                                                color: "var(--danger-text)",
-                                                border: "none",
-                                                borderRadius: 4,
-                                                cursor: "pointer",
-                                            }}
-                                        >
-                                            Reject
-                                        </button>
-                                    </>
-                                )}
-                                {r.status === "Rejected" && (
-                                    <>
-                                        <button
-                                            onClick={() => approveRequest(r.id)}
-                                            style={{
-                                                padding: "4px 8px",
-                                                background: "var(--primary-bg)",
-                                                color: "var(--primary-text)",
-                                                border: "none",
-                                                borderRadius: 4,
-                                                cursor: "pointer",
-                                            }}
-                                        >
-                                            Approve Again
-                                        </button>
-                                        <button
-                                            onClick={() => setRequestStatus(r.id, "Pending")}
-                                            style={{
-                                                padding: "4px 8px",
-                                                background: "var(--warning-bg)",
-                                                color: "var(--warning-text)",
-                                                border: "none",
-                                                borderRadius: 4,
-                                                cursor: "pointer",
-                                            }}
-                                        >
-                                            Reset to Pending
-                                        </button>
-                                    </>
-                                )}
-                                {r.status === "Approved" && (
-                                    <button
-                                        onClick={() => setRequestStatus(r.id, "Pending")}
-                                        style={{
-                                            padding: "4px 8px",
-                                            background: "var(--warning-bg)",
-                                            color: "var(--warning-text)",
-                                            border: "none",
-                                            borderRadius: 4,
-                                            cursor: "pointer",
-                                        }}
-                                    >
-                                        Reset to Pending
-                                    </button>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
+                                            <option value="Pending">Pending</option>
+                                            <option value="Approved">Approved</option>
+                                            <option value="Rejected">Rejected</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                        );
+                    })}
                     {requests.length === 0 && (
                         <tr>
-                            <td
-                                colSpan={8}
-                                style={{ padding: 12, textAlign: "center", color: "var(--text-muted)" }}
-                            >
+                            <td colSpan={7} style={{ padding: 12, textAlign: "center", color: "var(--text-muted)" }}>
                                 No requests found
                             </td>
                         </tr>

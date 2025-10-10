@@ -4,12 +4,12 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useAdmin } from "../../../../context/AdminStore";
+import { Agent } from "../../../../types/Agent";
 
 export default function AgentDetailsPage() {
-    const { id } = useParams();
+    const { id } = useParams() as { id: string };
     const agentId = Number(id);
-
-    const { agents, logs, addLog } = useAdmin();
+    const { agents, logs, addLog, updateAgent } = useAdmin();
     const { clients, detachClient } = useAdmin() as any; // расширим store для клиентов
 
     const agent = agents.find((a) => a.id === agentId);
@@ -86,6 +86,7 @@ export default function AgentDetailsPage() {
                 <div style={{ color: "var(--text-muted)", marginBottom: 16 }}>
                     Email: {agent.email} <br />
                     Board #: {agent.boardMemberNumber} <br />
+                    Status: {agent.status ?? "—"} <br />
                     Access until: {agent.accessUntil ?? "—"}
                 </div>
                 <div style={{ marginBottom: 8 }}>
@@ -93,6 +94,28 @@ export default function AgentDetailsPage() {
                     <a href={agent.inviteLink} target="_blank" rel="noreferrer">
                         {agent.inviteLink}
                     </a>
+                </div>
+
+                {/* Status editor */}
+                <div style={{ marginTop: 16 }}>
+                    <label style={{ display: "block", marginBottom: 4 }}>Change Status:</label>
+                    <select
+                        value={agent.status ?? "Pending"}
+                        onChange={(e) =>
+                            updateAgent({ ...agent, status: e.target.value as Agent["status"] })}
+                        style={{
+                            padding: "6px 10px",
+                            borderRadius: 4,
+                            border: "1px solid var(--card-border)",
+                            background: "var(--card-bg)",
+                            color: "var(--secondary-text)",
+                        }}
+                    >
+                        <option value="Pending">Pending</option>
+                        <option value="Active">Active</option>
+                        <option value="Suspended">Suspended</option>
+                        <option value="Expired">Expired</option>
+                    </select>
                 </div>
             </div>
 
