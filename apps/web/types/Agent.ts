@@ -1,9 +1,6 @@
-export type Agent = {
+// apps/web/types/Agent.ts
+export interface Agent {
     id: number;
     name: string;
-    email: string;
-    boardMemberNumber: string;
-    accessUntil: string;
-    inviteLink: string;
-    status?: "Pending" | "Active" | "Suspended" | "Expired"; // ← обязательно
-};
+    status: "Active" | "Inactive" | "Busy";
+}
