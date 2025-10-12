@@ -37,7 +37,11 @@ export default function LogsTable({ logs }: LogsTableProps) {
                     <tr>
                         <td
                             colSpan={3}
-                            style={{ padding: 12, textAlign: "center", color: "var(--text-muted)" }}
+                            style={{
+                                padding: 12,
+                                textAlign: "center",
+                                color: "var(--text-muted)",
+                            }}
                         >
                             No logs found
                         </td>
