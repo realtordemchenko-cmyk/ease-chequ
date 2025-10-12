@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useMemo, useReducer } from "react
 import { Agent } from "../types/Agent";
 import { Request, AgentRequest, RequestStatus } from "../types/Request";
 import { LogEntry } from "../types/LogEntry";
+// If Clients are not a standalone section in this snapshot, omit Client types here.
 
 interface State {
     agents: Agent[];
@@ -19,7 +20,13 @@ type Action =
     | { type: "INIT"; payload: State };
 
 const AdminContext = createContext<{
+    // Expose arrays directly to match pages contract
+    agents: Agent[];
+    requests: Request[];
+    logs: LogEntry[];
+    // Also expose state for internal use if needed
     state: State;
+    // Actions
     addAgent: (agent: Omit<Agent, "id">) => void;
     setRequestStatus: (id: string, status: RequestStatus) => void;
     approveRequest: (id: string) => void;
@@ -43,7 +50,6 @@ function reducer(state: State, action: Action): State {
         }
         case "ADD_LOG": {
             const next: LogEntry = { id: crypto.randomUUID(), ...action.payload };
-            // Deduplicate by (date, type, message) to keep audit trail clean
             const exists = state.logs.some(
                 (l) => l.date === next.date && l.type === next.type && l.message === next.message
             );
@@ -57,13 +63,15 @@ function reducer(state: State, action: Action): State {
 }
 
 export function AdminProvider({ children }: { children: React.ReactNode }) {
+    // Ensure arrays are initialized, not undefined
     const [state, dispatch] = useReducer(reducer, { agents: [], requests: [], logs: [] });
 
     useEffect(() => {
-        // initialize mocks or restore persisted state
-        // (omitted for brevity)
+        // Optional: if the snapshot expects seeded data, restore here.
+        // Keep empty to avoid shape drift; pages must not crash on empty arrays.
     }, []);
 
+    // Actions
     const addAgent = (agent: Omit<Agent, "id">) => {
         dispatch({ type: "ADD_AGENT", payload: agent });
         dispatch({
@@ -96,7 +104,6 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
 
         if (req.type === "Agent") {
             const ar = req as AgentRequest;
-
             if (!ar.name) {
                 dispatch({
                     type: "ADD_LOG",
@@ -109,7 +116,6 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
                 return;
             }
 
-            // Business rule: approved request creates agent in Pending (no access yet)
             dispatch({
                 type: "ADD_AGENT",
                 payload: {
@@ -117,13 +123,11 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
                     email: ar.email ?? "",
                     boardMemberNumber: ar.boardMemberNumber,
                     accessUntil: "",
-                    inviteLink: "", // will be set after verification/payment
+                    inviteLink: "",
                     status: "Pending",
                 },
             });
         }
-
-        // other request types handled here if needed
     };
 
     const rejectRequest = (id: string) => {
@@ -143,7 +147,20 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     };
 
     const value = useMemo(
-        () => ({ state, addAgent, setRequestStatus, approveRequest, rejectRequest, addLog }),
+        () => ({
+            // Expose arrays directly
+            agents: state.agents,
+            requests: state.requests,
+            logs: state.logs,
+            // Also expose full state
+            state,
+            // Actions
+            addAgent,
+            setRequestStatus,
+            approveRequest,
+            rejectRequest,
+            addLog,
+        }),
         [state]
     );
 
@@ -154,4 +171,4 @@ export const useAdmin = () => {
     const ctx = useContext(AdminContext);
     if (!ctx) throw new Error("AdminContext not found");
     return ctx;
-};
+}
