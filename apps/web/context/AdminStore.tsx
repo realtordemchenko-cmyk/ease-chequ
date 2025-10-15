@@ -1,174 +1,175 @@
-// apps/web/context/AdminStore.tsx
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useReducer } from "react";
-import { Agent } from "../types/Agent";
-import { Request, AgentRequest, RequestStatus } from "../types/Request";
-import { LogEntry } from "../types/LogEntry";
-// If Clients are not a standalone section in this snapshot, omit Client types here.
+import React, { createContext, useContext, useState } from "react";
+import { Agent } from "types/Agent";
+import { Request } from "types/Request";
+import { LogEntry } from "types/LogEntry";
 
-interface State {
-    agents: Agent[];
-    requests: Request[];
-    logs: LogEntry[];
+export interface Client {
+    id: string;
+    name: string;
+    status: string;
+    agentId: string;
 }
 
-type Action =
-    | { type: "ADD_AGENT"; payload: Omit<Agent, "id"> }
-    | { type: "SET_REQUEST_STATUS"; payload: { id: string; status: RequestStatus } }
-    | { type: "ADD_LOG"; payload: Omit<LogEntry, "id"> }
-    | { type: "INIT"; payload: State };
-
-const AdminContext = createContext<{
-    // Expose arrays directly to match pages contract
+interface AdminContextType {
     agents: Agent[];
+    clients: Client[];
     requests: Request[];
     logs: LogEntry[];
-    // Also expose state for internal use if needed
-    state: State;
-    // Actions
+
     addAgent: (agent: Omit<Agent, "id">) => void;
-    setRequestStatus: (id: string, status: RequestStatus) => void;
+    updateAgent: (agent: Agent) => void;
+    deleteAgent: (id: string) => void;
+
+    addClient: (client: Omit<Client, "id">) => void;
+    detachClient: (clientId: string) => void;
+
     approveRequest: (id: string) => void;
     rejectRequest: (id: string) => void;
-    addLog: (log: Omit<LogEntry, "id">) => void;
-} | null>(null);
 
-function reducer(state: State, action: Action): State {
-    switch (action.type) {
-        case "ADD_AGENT": {
-            const next: Agent = { id: crypto.randomUUID(), ...action.payload };
-            return { ...state, agents: [next, ...state.agents] };
-        }
-        case "SET_REQUEST_STATUS": {
-            return {
-                ...state,
-                requests: state.requests.map((r) =>
-                    r.id === action.payload.id ? { ...r, status: action.payload.status } : r
-                ),
-            };
-        }
-        case "ADD_LOG": {
-            const next: LogEntry = { id: crypto.randomUUID(), ...action.payload };
-            const exists = state.logs.some(
-                (l) => l.date === next.date && l.type === next.type && l.message === next.message
-            );
-            return exists ? state : { ...state, logs: [next, ...state.logs] };
-        }
-        case "INIT":
-            return action.payload;
-        default:
-            return state;
-    }
+    addLog: (log: Omit<LogEntry, "id" | "timestamp">) => void;
+
+    currentAdminRole: "Super Admin" | "Admin" | "Viewer";
+    setAdminRole: (role: "Super Admin" | "Admin" | "Viewer") => void;
 }
 
+const AdminContext = createContext<AdminContextType | undefined>(undefined);
+
 export function AdminProvider({ children }: { children: React.ReactNode }) {
-    // Ensure arrays are initialized, not undefined
-    const [state, dispatch] = useReducer(reducer, { agents: [], requests: [], logs: [] });
+    const [agents, setAgents] = useState<Agent[]>([
+        {
+            id: crypto.randomUUID(),
+            name: "Alice Johnson",
+            email: "alice@example.com",
+            boardMemberNumber: "B123",
+            accessUntil: "2025-12-31",
+            inviteLink: "https://example.com/invite/alice",
+            status: "Active"
+        },
+        {
+            id: crypto.randomUUID(),
+            name: "Bob Smith",
+            email: "bob@example.com",
+            boardMemberNumber: "B456",
+            accessUntil: "2025-11-30",
+            inviteLink: "https://example.com/invite/bob",
+            status: "Pending"
+        }
+    ]);
 
-    useEffect(() => {
-        // Optional: if the snapshot expects seeded data, restore here.
-        // Keep empty to avoid shape drift; pages must not crash on empty arrays.
-    }, []);
+    const [clients, setClients] = useState<Client[]>([]);
 
-    // Actions
-    const addAgent = (agent: Omit<Agent, "id">) => {
-        dispatch({ type: "ADD_AGENT", payload: agent });
-        dispatch({
-            type: "ADD_LOG",
-            payload: {
-                date: new Date().toISOString(),
-                type: "Agent",
-                message: `Agent created (Pending): ${agent.name}`,
-            },
-        });
+    const [requests, setRequests] = useState<Request[]>([
+        {
+            id: crypto.randomUUID(),
+            type: "Access",
+            name: "Charlie",
+            email: "charlie@example.com",
+            boardMemberNumber: "B789",
+            date: new Date().toISOString(),
+            status: "Pending"
+        },
+        {
+            id: crypto.randomUUID(),
+            type: "Update",
+            name: "Diana",
+            email: "diana@example.com",
+            boardMemberNumber: "B321",
+            date: new Date().toISOString(),
+            status: "Pending"
+        }
+    ]);
+
+    const [logs, setLogs] = useState<LogEntry[]>([]);
+    const [currentAdminRole, setCurrentAdminRole] = useState<"Super Admin" | "Admin" | "Viewer">(
+        "Super Admin"
+    );
+
+    const addLog = (log: Omit<LogEntry, "id" | "timestamp">) => {
+        setLogs((prev) => [
+            ...prev,
+            { ...log, id: crypto.randomUUID(), timestamp: new Date().toISOString() }
+        ]);
     };
 
-    const setRequestStatus = (id: string, status: RequestStatus) => {
-        dispatch({ type: "SET_REQUEST_STATUS", payload: { id, status } });
-        dispatch({
-            type: "ADD_LOG",
-            payload: {
-                date: new Date().toISOString(),
-                type: "Request",
-                message: `Request ${id} set to ${status}`,
-            },
-        });
+    const addAgent = (agent: Omit<Agent, "id">) => {
+        const newAgent = { ...agent, id: crypto.randomUUID() };
+        setAgents((prev) => [...prev, newAgent]);
+        addLog({ type: "Agent", message: `Agent ${newAgent.name} created` });
+    };
+
+    const updateAgent = (agent: Agent) => {
+        setAgents((prev) => prev.map((a) => (a.id === agent.id ? agent : a)));
+        addLog({ type: "Agent", message: `Agent ${agent.name} updated (status: ${agent.status})` });
+    };
+
+    const deleteAgent = (id: string) => {
+        const target = agents.find((a) => a.id === id);
+        setAgents((prev) => prev.filter((a) => a.id !== id));
+        if (target) addLog({ type: "Agent", message: `Agent ${target.name} deleted` });
+    };
+
+    const addClient = (client: Omit<Client, "id">) => {
+        setClients((prev) => [...prev, { ...client, id: crypto.randomUUID() }]);
+        addLog({ type: "Client", message: `Client ${client.name} added to agent ${client.agentId}` });
+    };
+
+    const detachClient = (clientId: string) => {
+        setClients((prev) => prev.filter((c) => c.id !== clientId));
+        addLog({ type: "Client", message: `Client ${clientId} detached` });
     };
 
     const approveRequest = (id: string) => {
-        const req = state.requests.find((r) => r.id === id);
-        if (!req) return;
-
-        setRequestStatus(id, "Approved");
-
-        if (req.type === "Agent") {
-            const ar = req as AgentRequest;
-            if (!ar.name) {
-                dispatch({
-                    type: "ADD_LOG",
-                    payload: {
-                        date: new Date().toISOString(),
-                        type: "Error",
-                        message: `Approve failed: missing agent name in request ${id}`,
-                    },
-                });
-                return;
-            }
-
-            dispatch({
-                type: "ADD_AGENT",
-                payload: {
-                    name: ar.name,
-                    email: ar.email ?? "",
-                    boardMemberNumber: ar.boardMemberNumber,
-                    accessUntil: "",
-                    inviteLink: "",
-                    status: "Pending",
-                },
+        setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status: "Approved" } : r)));
+        const req = requests.find((r) => r.id === id);
+        if (req) {
+            addAgent({
+                name: req.name,
+                email: req.email,
+                boardMemberNumber: req.boardMemberNumber,
+                accessUntil: "",
+                inviteLink: "",
+                status: "Pending"
             });
+            addLog({ type: "Request", message: `Request ${id} approved → agent created (${req.name})` });
         }
     };
 
     const rejectRequest = (id: string) => {
-        setRequestStatus(id, "Rejected");
-        dispatch({
-            type: "ADD_LOG",
-            payload: {
-                date: new Date().toISOString(),
-                type: "Request",
-                message: `Request ${id} rejected`,
-            },
-        });
+        setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status: "Rejected" } : r)));
+        addLog({ type: "Request", message: `Request ${id} rejected` });
     };
 
-    const addLog = (log: Omit<LogEntry, "id">) => {
-        dispatch({ type: "ADD_LOG", payload: log });
-    };
-
-    const value = useMemo(
-        () => ({
-            // Expose arrays directly
-            agents: state.agents,
-            requests: state.requests,
-            logs: state.logs,
-            // Also expose full state
-            state,
-            // Actions
-            addAgent,
-            setRequestStatus,
-            approveRequest,
-            rejectRequest,
-            addLog,
-        }),
-        [state]
+    return (
+        <AdminContext.Provider
+            value={{
+                agents,
+                clients,
+                requests,
+                logs,
+                addAgent,
+                updateAgent,
+                deleteAgent,
+                addClient,
+                detachClient,
+                approveRequest,
+                rejectRequest,
+                addLog,
+                currentAdminRole,
+                setAdminRole: (role) => {
+                    setCurrentAdminRole(role);
+                    addLog({ type: "Access", message: `Admin role changed to ${role}` });
+                }
+            }}
+        >
+            {children}
+        </AdminContext.Provider>
     );
-
-    return <AdminContext.Provider value={value}>{children}</AdminContext.Provider>;
 }
 
-export const useAdmin = () => {
+export function useAdmin() {
     const ctx = useContext(AdminContext);
-    if (!ctx) throw new Error("AdminContext not found");
+    if (!ctx) throw new Error("useAdmin must be used within AdminProvider");
     return ctx;
 }

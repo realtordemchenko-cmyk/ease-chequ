@@ -1,26 +1,16 @@
+// apps/web/app/layout.tsx
+import type { Metadata } from "next";
 import "./globals.css";
-import { AuditProvider } from "./store/AuditContext";
-import { AgentsProvider } from "./store/AgentsContext";
 
-export const metadata = {
-  title: "EaseChequ Admin",
-  description: "Administration panel",
+export const metadata: Metadata = {
+  title: "EaseChequ",
+  description: "Admin panel and client portal"
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        <AuditProvider>
-          <AgentsProvider>
-            {children}
-          </AgentsProvider>
-        </AuditProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

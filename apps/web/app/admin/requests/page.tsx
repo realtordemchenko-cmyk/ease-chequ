@@ -1,79 +1,51 @@
-// apps/web/app/admin/requests/page.tsx
 "use client";
 
-import { useAdmin } from "../../../context/AdminStore";
-import { RequestStatusBadge } from "@/components/requests/RequestStatusBadge";
+import { useAdmin } from "context/AdminStore";
+import { Request } from "types/Request";
 
 export default function RequestsPage() {
-    const { requests, setRequestStatus } = useAdmin();
+    const { requests, approveRequest, rejectRequest, currentAdminRole } = useAdmin();
+    const isViewer = currentAdminRole === "Viewer";
 
     return (
-        <section>
-            <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Requests</h1>
-            <table
-                style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    background: "var(--card-bg)",
-                    color: "var(--secondary-text)",
-                    border: `1px solid var(--card-border)`,
-                }}
-            >
+        <div>
+            <h1>Requests</h1>
+
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                     <tr>
-                        <th style={{ textAlign: "left", padding: 8 }}>ID</th>
-                        <th style={{ textAlign: "left", padding: 8 }}>Type</th>
-                        <th style={{ textAlign: "left", padding: 8 }}>Name</th>
-                        <th style={{ textAlign: "left", padding: 8 }}>Email</th>
-                        <th style={{ textAlign: "left", padding: 8 }}>Board #</th>
-                        <th style={{ textAlign: "left", padding: 8 }}>Date</th>
-                        <th style={{ textAlign: "left", padding: 8 }}>Status</th>
+                        <th>Type</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Membership #</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        {!isViewer && <th>Actions</th>}
                     </tr>
                 </thead>
                 <tbody>
-                    {requests.map((r) => {
-                        const status = r.status.toLowerCase();
-                        return (
-                            <tr key={r.id}>
-                                <td style={{ padding: 8 }}>{r.id}</td>
-                                <td style={{ padding: 8 }}>{r.type}</td>
-                                <td style={{ padding: 8 }}>{r.name}</td>
-                                <td style={{ padding: 8 }}>{r.email ?? "—"}</td>
-                                <td style={{ padding: 8 }}>{r.boardMemberNumber ?? "—"}</td>
-                                <td style={{ padding: 8 }}>{r.date}</td>
-                                <td style={{ padding: 8 }}>
-                                    <RequestStatusBadge status={status as "pending" | "approved" | "rejected"} />
-                                    <div style={{ marginTop: 6 }}>
-                                        <select
-                                            value={r.status}
-                                            onChange={(e) =>
-                                                setRequestStatus(r.id, e.target.value as "Pending" | "Approved" | "Rejected")
-                                            } style={{
-                                                padding: "4px 6px",
-                                                borderRadius: 4,
-                                                border: "1px solid var(--card-border)",
-                                                background: "var(--card-bg)",
-                                                color: "var(--secondary-text)",
-                                            }}
-                                        >
-                                            <option value="Pending">Pending</option>
-                                            <option value="Approved">Approved</option>
-                                            <option value="Rejected">Rejected</option>
-                                        </select>
-                                    </div>
+                    {requests.map((req: Request) => (
+                        <tr key={req.id}>
+                            <td>{req.type}</td>
+                            <td>{req.name}</td>
+                            <td>{req.email}</td>
+                            <td>{req.boardMemberNumber}</td>
+                            <td>{new Date(req.date).toLocaleString()}</td>
+                            <td>{req.status}</td>
+                            {!isViewer && req.status === "Pending" && (
+                                <td>
+                                    <button style={{ marginRight: "8px" }} onClick={() => approveRequest(req.id)}>
+                                        Approve
+                                    </button>
+                                    <button style={{ background: "red", color: "white" }} onClick={() => rejectRequest(req.id)}>
+                                        Reject
+                                    </button>
                                 </td>
-                            </tr>
-                        );
-                    })}
-                    {requests.length === 0 && (
-                        <tr>
-                            <td colSpan={7} style={{ padding: 12, textAlign: "center", color: "var(--text-muted)" }}>
-                                No requests found
-                            </td>
+                            )}
                         </tr>
-                    )}
+                    ))}
                 </tbody>
             </table>
-        </section>
+        </div>
     );
 }

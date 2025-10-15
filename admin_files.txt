@@ -1,0 +1,31 @@
+﻿
+FullName                                                                  
+--------                                                                  
+D:\Projects\Ease Chequ\apps\web\app\admin\AdminLayoutClient.tsx           
+D:\Projects\Ease Chequ\apps\web\app\admin\code                            
+D:\Projects\Ease Chequ\apps\web\app\admin\layout.tsx                      
+D:\Projects\Ease Chequ\apps\web\app\admin\page.tsx                        
+D:\Projects\Ease Chequ\apps\web\app\admin\agents\page.tsx                 
+D:\Projects\Ease Chequ\apps\web\app\admin\agents\register\page.tsx        
+D:\Projects\Ease Chequ\apps\web\app\admin\agents\[id]\page.tsx            
+D:\Projects\Ease Chequ\apps\web\app\admin\clients\page.tsx                
+D:\Projects\Ease Chequ\apps\web\app\admin\clients\[id]\page.tsx           
+D:\Projects\Ease Chequ\apps\web\app\admin\components\Footer.tsx           
+D:\Projects\Ease Chequ\apps\web\app\admin\components\Sidebar.tsx          
+D:\Projects\Ease Chequ\apps\web\app\admin\dashboard\AdminDashboardPage.tsx
+D:\Projects\Ease Chequ\apps\web\app\admin\dashboard\page.tsx              
+D:\Projects\Ease Chequ\apps\web\app\admin\logs\page.tsx                   
+D:\Projects\Ease Chequ\apps\web\app\admin\logs\useLogs.ts                 
+D:\Projects\Ease Chequ\apps\web\app\admin\requests\page.tsx               
+D:\Projects\Ease Chequ\apps\web\app\admin\settings\page.tsx               
+D:\Projects\Ease Chequ\apps\web\app\admin\settings\SettingsPage.tsx       
+D:\Projects\Ease Chequ\apps\web\app\admin\users\page.tsx                  
+D:\Projects\Ease Chequ\apps\web\app\admin\users\UsersPage.tsx             
+D:\Projects\Ease Chequ\apps\web\components\agents\AgentForm.tsx           
+D:\Projects\Ease Chequ\apps\web\components\agents\AgentTable.tsx          
+D:\Projects\Ease Chequ\apps\web\components\requests\RequestStatusBadge.tsx
+D:\Projects\Ease Chequ\apps\web\components\logs\LogsFilters.tsx           
+D:\Projects\Ease Chequ\apps\web\components\logs\LogsPagination.tsx        
+D:\Projects\Ease Chequ\apps\web\components\logs\LogsTable.tsx             
+
+

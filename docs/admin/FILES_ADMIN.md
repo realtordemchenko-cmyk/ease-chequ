@@ -175,3 +175,17 @@ Notes:
 - **Управление статусами агентов:** все переходы статусов выполняются только через Requests. При approve Agent создаётся со статусом "Pending"; доступ выдается после проверки оплаты и данных.
 
 - ✅ `apps/web/components/logs/LogsPagination.tsx` — вынесена пагинация.
+- ✅ `apps/web/components/requests/RequestStatusBadge.tsx` — визуальный индикатор статуса заявки.
+- ✅ `apps/web/app/admin/requests/page.tsx` — таблица заявок с действиями Approve/Reject/Reset.
+- ✅ `apps/web/components/agents/AgentTable.tsx` — таблица агентов.
+- ✅ `apps/web/components/agents/AgentForm.tsx` — форма редактирования агента.
+- ✅ `apps/web/app/admin/agents/page.tsx` — список агентов.
+- ✅ `apps/web/app/admin/agents/[id]/page.tsx` — страница конкретного агента.
+- ✅ `apps/web/components/clients/ClientTable.tsx` — таблица клиентов.
+- ✅ `apps/web/components/clients/ClientForm.tsx` — форма редактирования клиента.
+- ✅ `apps/web/app/admin/clients/page.tsx` — список клиентов.
+- ✅ `apps/web/app/admin/clients/[id]/page.tsx` — страница конкретного клиента.
+- **2025‑10‑12** Added: финальная версия Clients (список, страница клиента, таблица, форма).
+- ✅ `apps/web/components/logs/LogsExport.tsx` — экспорт логов в CSV.
+- ✅ `apps/web/app/admin/logs/page.tsx` — страница логов (фильтры, таблица, пагинация, экспорт).
+- **2025‑10‑12** Added: финальная версия Logs (страница + фильтры + таблица + пагинация + экспорт).

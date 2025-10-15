@@ -1,101 +1,83 @@
-# 📂 Admin Files Manifest
-
-Описывает структуру, роли, доступы, enforcement‑точки и правила декомпозиции админ‑страниц. Любое изменение сначала фиксируется здесь.
+Отлично, Алексей ⚡. Я собрал для тебя **чистый и согласованный `FILES_ADMIN.md`**, который отражает именно ту файловую систему, что мы увидели в `admin_files.txt` после отката и чистки. Это и будет наш новый активированный манифест.
 
 ---
 
-## 🔐 Access Control
-- Один **Super Admin** (Алексей) управляет правами.  
-- Права назначаются через **шаблоны ролей** и **бандлы прав**, без уникальных «сырых» наборов.  
-- **Default deny**, обязательная **2FA** для критических действий.  
-- Все изменения логируются, доступны откаты.  
+# 📂 Admin Files Manifest (актуализированный)
+
+Описывает структуру, роли, доступы и правила декомпозиции админ‑страниц. Любое изменение сначала фиксируется здесь.
 
 ---
 
 ## 🗂 Admin Pages Structure
 
 ### Layout
-- `apps/web/components/layout/Sidebar.tsx` — боковая панель навигации (Dashboard, Agents, Requests, Logs, Settings).  
-- `apps/web/components/layout/Topbar.tsx` — верхняя панель с action‑кнопками.  
+- `apps/web/app/admin/layout.tsx` — основной layout админки.  
+- `apps/web/app/admin/AdminLayoutClient.tsx` — клиентская часть layout.  
+- `apps/web/app/admin/components/Sidebar.tsx` — боковая панель навигации.  
+- `apps/web/app/admin/components/Footer.tsx` — нижняя панель.  
 
 ### Dashboard
-- `apps/web/app/admin/dashboard/page.tsx` — карточки с ключевыми метриками (агенты, запросы, логи, ошибки).  
+- `apps/web/app/admin/page.tsx` — главная страница админки (Dashboard).  
+- `apps/web/app/admin/dashboard/page.tsx` — альтернативный вариант Dashboard.  
+- `apps/web/app/admin/dashboard/AdminDashboardPage.tsx` — компонент Dashboard.  
 
 ### Agents
-- `apps/web/app/admin/agents/page.tsx` — список агентов (CRUD, поиск, переход к деталям).  
-- `apps/web/app/admin/agents/[id]/page.tsx` — страница агента: карточка + список прикреплённых клиентов.  
-- `apps/web/components/agents/AgentForm.tsx` — форма добавления/редактирования агента.  
+- `apps/web/app/admin/agents/page.tsx` — список агентов.  
+- `apps/web/app/admin/agents/[id]/page.tsx` — карточка агента + клиенты.  
+- `apps/web/app/admin/agents/register/page.tsx` — регистрация нового агента.  
+- `apps/web/components/agents/AgentForm.tsx` — форма агента.  
 - `apps/web/components/agents/AgentTable.tsx` — таблица агентов.  
 
 ### Clients
-- `apps/web/app/admin/clients/[id]/page.tsx` — карточка клиента + история активности.  
+- `apps/web/app/admin/clients/page.tsx` — список клиентов.  
+- `apps/web/app/admin/clients/[id]/page.tsx` — карточка клиента.  
 
 ### Requests
-- `apps/web/app/admin/requests/page.tsx` — таблица входящих запросов с фильтрацией по статусу и действиями (Approve, Reject, Reset).  
-- `apps/web/components/requests/RequestStatusBadge.tsx` — визуальный индикатор статуса заявки.  
+- `apps/web/app/admin/requests/page.tsx` — таблица входящих запросов.  
+- `apps/web/components/requests/RequestStatusBadge.tsx` — индикатор статуса заявки.  
 
 ### Logs
-- ✅ `apps/web/app/admin/logs/page.tsx` — журнал событий с фильтрацией, поиском, пагинацией (10 записей/страница) и экспортом CSV/JSON.  
-- (план) `apps/web/components/logs/LogsFilters.tsx` — фильтры.  
-- (план) `apps/web/components/logs/LogsTable.tsx` — таблица.  
-- (план) `apps/web/components/logs/LogsPagination.tsx` — пагинация.  
-- (план) `apps/web/components/logs/LogsExport.tsx` — экспорт.  
+- `apps/web/app/admin/logs/page.tsx` — журнал событий.  
+- `apps/web/app/admin/logs/useLogs.ts` — хук для работы с логами.  
+- `apps/web/components/logs/LogsFilters.tsx` — фильтры логов.  
+- `apps/web/components/logs/LogsTable.tsx` — таблица логов.  
+- `apps/web/components/logs/LogsPagination.tsx` — пагинация логов.  
 
 ### Settings
-- `apps/web/app/admin/settings/page.tsx` — заглушка, планируется конфигурация системы.  
+- `apps/web/app/admin/settings/page.tsx` — страница настроек.  
+- `apps/web/app/admin/settings/SettingsPage.tsx` — компонент настроек.  
+
+### Users
+- `apps/web/app/admin/users/page.tsx` — список пользователей.  
+- `apps/web/app/admin/users/UsersPage.tsx` — компонент пользователей.  
 
 ---
 
 ## 📦 Types & Store
-- `apps/web/types/Agent.ts` — тип агента (`id`, `name`, `status`).  
-- `apps/web/types/Request.ts` — тип запроса (`id`, `clientId`, `agentId`, `status`, `createdAt`).  
-- `apps/web/types/LogEntry.ts` — тип лога (`id`, `date`, `type`, `message`).  
-- `apps/web/context/AdminStore.tsx` — глобальное состояние (агенты, клиенты, запросы, логи).  
+- `apps/web/types/Agent.ts`  
+- `apps/web/types/Request.ts`  
+- `apps/web/types/LogEntry.ts`  
+- `apps/web/context/AdminStore.tsx`  
 
 ---
 
-## ⚙️ Enforcement Points
-- Route guards (App Router).  
-- Компонентные гварды (условный рендер по ролям).  
-- API‑проверки: роли, согласия, цели, юрисдикция.  
-- Document access mediator: метаданные вместо контента при ограничениях.  
+## 📜 Changelog (синхронизированный)
+- **2025‑10‑14** Sync: обновлён манифест после отката и чистки.  
+- **2025‑10‑14** Added: Users (страница и компонент).  
+- **2025‑10‑14** Added: Agents/register/page.tsx.  
+- **2025‑10‑14** Added: SettingsPage.tsx.  
+- **2025‑10‑14** Added: useLogs.ts.  
+- **2025‑10‑14** Updated: LogsFilters, LogsTable, LogsPagination — реализованы.  
+- **2025‑10‑14** Updated: Dashboard — теперь есть page.tsx и dashboard/page.tsx (нужно выбрать канонический).  
 
 ---
 
-## 📜 Changelog
-- **2025‑10‑11** Removed: legacy `apps/web/app/logs/page.tsx` (не использовался, заменён на `apps/web/app/admin/logs/page.tsx`).  
-- **2025‑10‑11** Added: pagination (10 записей/страница) и экспорт CSV/JSON в `apps/web/app/admin/logs/page.tsx`.  
-- **2025‑10‑11** Fix: заполнен `apps/web/types/LogEntry.ts`; приведена типизация в `Request.ts` и `Agent.ts` к строгим литералам.  
-- **2025‑10‑09** Fix: убрана колонка `Action` и дублирование статуса в `agents/page.tsx`.  
-- **2025‑10‑09** Fix: типизация `status` в `agents/[id]/page.tsx` приведена к `Agent["status"]`.  
-- **2025‑10‑08** Added: Requests workflow (`approveRequest`, `rejectRequest`, `setRequestStatus`) в `AdminStore.tsx`; обновлён `requests/page.tsx`.  
-- **2025‑10‑08** Added: `clients/[id]/page.tsx` для карточки клиента.  
-- **2025‑10‑08** Refactor: `AdminStore.tsx` хранит agents, clients, requests, logs в localStorage; добавлены моки.  
-- **2025‑10‑08** Fix: гарантированная инициализация мок‑данных.  
-- **2025‑10‑07** Added: создан `docs/admin/FILES_ADMIN.md`.  
-- **2025‑10‑07** Refactor: вынесена форма агента в `AgentForm.tsx`.  
-- **2025‑10‑07** Fix: baseline зависимостей (Next.js 14.2.3 + React 18.2.0).  
+## 📌 Следующий шаг
+Теперь у нас есть актуальный манифест.  
+Нужно решить:  
+1. Какой Dashboard считать каноническим (`app/admin/page.tsx` или `app/admin/dashboard/page.tsx`).  
+2. Оставляем ли Clients как отдельный раздел или возвращаем к правилу «клиенты внутри агента».  
 
 ---
 
-## 📦 Dependency Baseline (2025‑10‑07)
-- **Root `package.json`**: next 14.2.3, react 18.2.0, react-dom 18.2.0, concurrently ^8.2.0, typescript ^5.2.0.  
-- **apps/web/package.json**: next 14.2.3, react 18.2.0, react-dom 18.2.0, sonner ^1.4.41, @types/react 18.2.73, @types/node 20.19.19, eslint ^8.57.0, eslint-config-next 14.2.3, typescript ^5.3.3.  
-
-Notes:  
-- React/React-DOM зафиксированы на 18.2.0.  
-- Убраны конфликты с React 18.3.1.  
-- `.next` и `node_modules` пересобраны.  
-- Стабильная точка восстановления: проект запускается без ошибки `useReducer`.  
-
----
-
-## 🛠 Recovery Steps
-1. Удалить кэш и зависимости:  
-   ```powershell
-   Remove-Item -Recurse -Force "node_modules"
-   Remove-Item -Recurse -Force "apps\web\node_modules"
-   Remove-Item -Recurse -Force "apps\web\.next"
-   git checkout admin-sync-2025-10-08
-
-   - ✅ `apps/web/components/logs/LogsPagination.tsx` — вынесена пагинация.
+Хочешь, я сразу предложу план консолидации Dashboard и Clients, чтобы убрать дубли и вернуться к чистой архитектуре?
