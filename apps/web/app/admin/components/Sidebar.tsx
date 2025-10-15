@@ -1,76 +1,99 @@
 "use client";
 
-import React from "react";
+import { usePathname, useRouter } from "next/navigation";
 
-type Section = "dashboard" | "agents" | "requests" | "logs" | "settings";
+export default function Sidebar() {
+    const router = useRouter();
+    const pathname = usePathname();
 
-const styles: Record<string, React.CSSProperties> = {
-    sidebar: {
-        borderRight: "1px solid #649f83ff",
-        padding: "16px",
-        background: "#102722ff",
-    },
-    brand: {
-        fontWeight: 700,
-        marginBottom: "12px",
-        fontSize: "18px",
-        color: "#d3e8ff",
-    },
-    navItem: {
+    const navStyle = (path: string) => ({
         display: "block",
         width: "100%",
         textAlign: "left" as const,
-        padding: "10px 12px",
-        marginBottom: "6px",
-        borderRadius: "8px",
-        background: "transparent",
-        color: "#e6edf3",
-        border: "1px solid transparent",
+        padding: "12px 20px",
+        marginBottom: "4px",
+        borderRadius: "6px",
+        background: pathname === path ? "var(--sidebar-active)" : "transparent",
+        color: pathname === path ? "var(--primary-text)" : "var(--secondary-text)",
+        border: "none",
         cursor: "pointer",
-        fontSize: "15px",
-    },
-    navItemActive: {
-        background: "#17422aff",
-        borderColor: "#d3e8ffff",
-        borderWidth: "2px",
-        borderStyle: "solid",
-        borderRadius: "8px",
-        fontWeight: 600,
-    },
-};
+        fontWeight: pathname === path ? 600 : 400,
+        transition: "background 0.2s, color 0.2s"
+    });
 
-export default function Sidebar({
-    section,
-    onNavigate,
-}: {
-    section?: Section;
-    onNavigate: (target: Section) => void;
-}) {
-    const navStyle = (key: Section) =>
-        key === section
-            ? { ...styles.navItem, ...styles.navItemActive }
-            : styles.navItem;
+    const hoverStyle: React.CSSProperties = {
+        background: "var(--sidebar-hover)",
+        color: "var(--primary-text)"
+    };
+
+    const handleNav = (path: string) => {
+        router.push(path);
+    };
 
     return (
-        <aside style={styles.sidebar}>
-            <div style={styles.brand}>Ease Chequ Admin</div>
-            <nav>
-                <button style={navStyle("dashboard")} onClick={() => onNavigate("dashboard")}>
+        <div
+            style={{
+                width: "240px",
+                height: "100%",
+                background: "var(--sidebar-bg)",
+                display: "flex",
+                flexDirection: "column",
+                padding: "16px",
+                boxSizing: "border-box"
+            }}
+        >
+            <div
+                style={{
+                    fontWeight: 700,
+                    fontSize: "18px",
+                    marginBottom: "24px",
+                    color: "var(--primary-text)"
+                }}
+            >
+                Ease Chequ Admin
+            </div>
+            <nav style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <button
+                    style={navStyle("/admin")}
+                    onMouseEnter={(e) => Object.assign(e.currentTarget.style, hoverStyle)}
+                    onMouseLeave={(e) => Object.assign(e.currentTarget.style, navStyle("/admin"))}
+                    onClick={() => handleNav("/admin")}
+                >
                     Dashboard
                 </button>
-                <button style={navStyle("agents")} onClick={() => onNavigate("agents")}>
+                <button
+                    style={navStyle("/admin/agents")}
+                    onMouseEnter={(e) => Object.assign(e.currentTarget.style, hoverStyle)}
+                    onMouseLeave={(e) => Object.assign(e.currentTarget.style, navStyle("/admin/agents"))}
+                    onClick={() => handleNav("/admin/agents")}
+                >
                     Agents
                 </button>
-                <button style={navStyle("requests")} onClick={() => onNavigate("requests")}>
+                <button
+                    style={navStyle("/admin/requests")}
+                    onMouseEnter={(e) => Object.assign(e.currentTarget.style, hoverStyle)}
+                    onMouseLeave={(e) => Object.assign(e.currentTarget.style, navStyle("/admin/requests"))}
+                    onClick={() => handleNav("/admin/requests")}
+                >
                     Requests
                 </button>
-                <button style={navStyle("logs")} onClick={() => onNavigate("logs")}>
+                <button
+                    style={navStyle("/admin/logs")}
+                    onMouseEnter={(e) => Object.assign(e.currentTarget.style, hoverStyle)}
+                    onMouseLeave={(e) => Object.assign(e.currentTarget.style, navStyle("/admin/logs"))}
+                    onClick={() => handleNav("/admin/logs")}
+                >
                     Logs
                 </button>
-                <button style={navStyle("settings")} onClick={() => onNavigate("settings")}>
+                <button
+                    style={navStyle("/admin/settings")}
+                    onMouseEnter={(e) => Object.assign(e.currentTarget.style, hoverStyle)}
+                    onMouseLeave={(e) => Object.assign(e.currentTarget.style, navStyle("/admin/settings"))}
+                    onClick={() => handleNav("/admin/settings")}
+                >
                     Settings
                 </button>
             </nav>
-        </aside>
+        </div>
     );
 }
