@@ -1,48 +1,60 @@
 "use client";
 
-import { useAdmin } from "context/AdminStore";
+import React from "react";
+import { AdminProvider, useAdmin } from "../../context/AdminStore";
 
-export default function DashboardPage() {
-    const { agents, clients, requests, logs } = useAdmin();
+function DashboardContent() {
+    const {
+        agents,
+        clients,
+        requests,
+        archivedAgents,
+        archivedRequests,
+    } = useAdmin();
+
+    const approvedArchived = archivedRequests.filter((r) => r.status === "Approved").length;
+    const rejectedArchived = archivedRequests.filter((r) => r.status === "Rejected").length;
 
     return (
-        <div>
-            <h1>Dashboard</h1>
-
-            <div style={{ display: "flex", gap: "16px", marginBottom: "24px" }}>
-                <div style={{ padding: "12px", border: "1px solid var(--card-border)", borderRadius: 6 }}>
-                    <h3>Agents</h3>
-                    <p>{agents.length}</p>
-                </div>
-                <div style={{ padding: "12px", border: "1px solid var(--card-border)", borderRadius: 6 }}>
-                    <h3>Clients</h3>
-                    <p>{clients.length}</p>
-                </div>
-                <div style={{ padding: "12px", border: "1px solid var(--card-border)", borderRadius: 6 }}>
-                    <h3>Requests</h3>
-                    <p>{requests.length}</p>
-                </div>
-                <div style={{ padding: "12px", border: "1px solid var(--card-border)", borderRadius: 6 }}>
-                    <h3>Logs</h3>
-                    <p>{logs.length}</p>
-                </div>
+        <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(3, 1fr)", padding: 16 }}>
+            <div style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: 6 }}>
+                <h3>Agents</h3>
+                <p>{agents.length}</p>
             </div>
 
-            <h2>Recent Activity</h2>
-            {logs.length === 0 ? (
-                <p>No activity yet</p>
-            ) : (
-                <ul>
-                    {logs
-                        .slice(-5)
-                        .reverse()
-                        .map((log) => (
-                            <li key={log.id}>
-                                [{new Date(log.timestamp).toLocaleTimeString()}] {log.type}: {log.message}
-                            </li>
-                        ))}
-                </ul>
-            )}
+            <div style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: 6 }}>
+                <h3>Clients</h3>
+                <p>{clients.length}</p>
+            </div>
+
+            <div style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: 6 }}>
+                <h3>Requests</h3>
+                <p>{requests.length}</p>
+            </div>
+
+            <div style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: 6 }}>
+                <h3>Deleted Agents (Archive)</h3>
+                <p>{archivedAgents.length}</p>
+            </div>
+
+            <div style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: 6 }}>
+                <h3>Approved Requests (Archive)</h3>
+                <p>{approvedArchived}</p>
+            </div>
+
+            <div style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: 6 }}>
+                <h3>Rejected Requests (Archive)</h3>
+                <p>{rejectedArchived}</p>
+            </div>
         </div>
+    );
+}
+
+export default function AdminDashboardPage() {
+    // Local provider wrap to avoid reliance on layout while we restore it safely
+    return (
+        <AdminProvider>
+            <DashboardContent />
+        </AdminProvider>
     );
 }

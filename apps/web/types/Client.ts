@@ -1,7 +1,8 @@
-// apps/web/types/Client.ts
+// Client entity used for dashboard counts and client lists.
+// id is required to support deleteClient and consistent logging.
 export interface Client {
-    id: number;
+    id: string;
     name: string;
-    status: string; // e.g. "Active" | "Pending" | "Suspended"
-    agentId?: number; // optional link to Agent
+    email: string;
+    phone?: string;
 }

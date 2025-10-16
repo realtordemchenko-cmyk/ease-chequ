@@ -1,29 +1,37 @@
-// apps/web/app/admin/dashboard/page.tsx
+"use client";
+
+import { useAdmin } from "context/AdminStore";
+
 export default function DashboardPage() {
-    const cards = [
-        { title: "Active Agents", value: 12 },
-        { title: "Pending Requests", value: 34 },
-        { title: "System Logs Today", value: 128 },
-        { title: "Errors", value: 2 },
-    ];
+    const { agents, archivedAgents, requests, archivedRequests } = useAdmin();
+
+    const activeAgents = agents.filter((a) => a.status === "Active").length;
+    const deletedAgents = archivedAgents.length;
+
+    const pendingRequests = requests.filter((r) => r.status === "Pending").length;
+    const approvedRequests = archivedRequests.filter((r) => r.status === "Approved").length;
+    const rejectedRequests = archivedRequests.filter((r) => r.status === "Rejected").length;
 
     return (
-        <section style={{ display: "grid", gap: "16px", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
-            {cards.map((card) => (
-                <div
-                    key={card.title}
-                    style={{
-                        background: "var(--card-bg)",
-                        border: `1px solid var(--card-border)`,
-                        borderRadius: "8px",
-                        padding: "16px",
-                        color: "var(--secondary-text)",
-                    }}
-                >
-                    <div style={{ fontSize: "14px", color: "var(--text-muted)" }}>{card.title}</div>
-                    <div style={{ fontSize: "24px", fontWeight: 600 }}>{card.value}</div>
+        <div>
+            <h1>Dashboard</h1>
+            <div style={{ display: "grid", gap: "12px", maxWidth: "400px" }}>
+                <div style={{ padding: "8px", border: "1px solid #ccc" }}>
+                    <strong>Active Agents:</strong> {activeAgents}
                 </div>
-            ))}
-        </section>
+                <div style={{ padding: "8px", border: "1px solid #ccc" }}>
+                    <strong>Deleted Agents:</strong> {deletedAgents}
+                </div>
+                <div style={{ padding: "8px", border: "1px solid #ccc" }}>
+                    <strong>Pending Requests:</strong> {pendingRequests}
+                </div>
+                <div style={{ padding: "8px", border: "1px solid #ccc" }}>
+                    <strong>Approved Requests:</strong> {approvedRequests}
+                </div>
+                <div style={{ padding: "8px", border: "1px solid #ccc" }}>
+                    <strong>Rejected Requests:</strong> {rejectedRequests}
+                </div>
+            </div>
+        </div>
     );
 }

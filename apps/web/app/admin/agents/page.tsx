@@ -3,6 +3,8 @@
 import { useAdmin } from "context/AdminStore";
 import { Agent } from "types/Agent";
 import { useState } from "react";
+import Link from "next/link";
+import AgentDeleteModal from "app/admin/components/AgentDeleteModal";
 
 export default function AgentsPage() {
     const { agents, addAgent, updateAgent, deleteAgent, currentAdminRole } = useAdmin();
@@ -12,8 +14,10 @@ export default function AgentsPage() {
         boardMemberNumber: "",
         accessUntil: "",
         inviteLink: "",
-        status: "Pending"
+        status: "Pending",
     });
+
+    const [deleteTarget, setDeleteTarget] = useState<Agent | null>(null);
 
     const isViewer = currentAdminRole === "Viewer";
 
@@ -22,14 +26,17 @@ export default function AgentsPage() {
             alert("Name, Email and Membership number are required");
             return;
         }
-        addAgent(newAgent);
+        addAgent({
+            ...newAgent,
+            inviteLink: `https://easechequ.app/invite/${crypto.randomUUID()}`,
+        });
         setNewAgent({
             name: "",
             email: "",
             boardMemberNumber: "",
             accessUntil: "",
             inviteLink: "",
-            status: "Pending"
+            status: "Pending",
         });
     };
 
@@ -62,7 +69,9 @@ export default function AgentsPage() {
                     <input
                         type="date"
                         value={newAgent.accessUntil}
-                        onChange={(e) => setNewAgent({ ...newAgent, accessUntil: e.target.value })}
+                        onChange={(e) =>
+                            setNewAgent({ ...newAgent, accessUntil: e.target.value })
+                        }
                     />
                     <button onClick={handleAdd}>Add Agent</button>
                 </div>
@@ -82,7 +91,9 @@ export default function AgentsPage() {
                 <tbody>
                     {agents.map((agent) => (
                         <tr key={agent.id}>
-                            <td>{agent.name}</td>
+                            <td>
+                                <Link href={`/admin/agents/${agent.id}`}>{agent.name}</Link>
+                            </td>
                             <td>{agent.email}</td>
                             <td>{agent.boardMemberNumber}</td>
                             <td>{agent.accessUntil}</td>
@@ -91,13 +102,15 @@ export default function AgentsPage() {
                                     <select
                                         value={agent.status}
                                         onChange={(e) =>
-                                            updateAgent({ ...agent, status: e.target.value as Agent["status"] })
+                                            updateAgent({
+                                                ...agent,
+                                                status: e.target.value as Agent["status"],
+                                            })
                                         }
                                     >
                                         <option value="Pending">Pending</option>
                                         <option value="Active">Active</option>
-                                        <option value="Inactive">Inactive</option>
-                                        <option value="Busy">Busy</option>
+                                        <option value="Suspended">Suspended</option>
                                     </select>
                                 ) : (
                                     agent.status
@@ -105,13 +118,24 @@ export default function AgentsPage() {
                             </td>
                             {!isViewer && (
                                 <td>
-                                    <button onClick={() => deleteAgent(agent.id)}>Delete</button>
+                                    <button onClick={() => setDeleteTarget(agent)}>Delete</button>
                                 </td>
                             )}
                         </tr>
                     ))}
                 </tbody>
             </table>
+
+            {deleteTarget && (
+                <AgentDeleteModal
+                    agentName={deleteTarget.name}
+                    onConfirm={() => {
+                        deleteAgent(deleteTarget.id);
+                        setDeleteTarget(null);
+                    }}
+                    onClose={() => setDeleteTarget(null)}
+                />
+            )}
         </div>
     );
 }

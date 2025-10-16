@@ -1,73 +1,72 @@
-# React + TypeScript + Vite
+# Ease Chequ Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Ease Chequ — это SaaS‑платформа для агентств и агентов, объединяющая управление клиентами, документами и сервисами в едином центре.  
+Архитектура модульная: каждый сервис подключается как отдельный модуль, управляемый через админ‑панель.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🎯 Цели
+- Ускорение процессов аренды и сделок.  
+- Прозрачность статусов для агентов и клиентов.  
+- Безопасная работа с документами (шифрование/дешифрование).  
+- Централизованное управление подписками, оплатами и доступами.  
+- Масштабируемость: новые сервисы добавляются без изменения ядра.  
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 👥 Роли
+- **Клиент (Applicant, Occupant, Guarantor)** — загружает документы, проходит предквалификацию.  
+- **Агент** — управляет кейсами, видит статусы и отчёты ИИ.  
+- **Агентство** — добавляет агентов, управляет подпиской.  
+- **Developer/Admin** — управляет системой через админ‑панель (агенты, агентства, платежи, настройки).  
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🧩 Сервисы (модули)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Prequal‑Rent (первый сервис)
+Сервис предквалификации арендаторов.  
+Функционал:
+- Клиентская анкета: Applicant / Occupant / Guarantor.  
+- Загрузка документов (Employment Letter, Paystubs, Bank Statements, NOA, Equifax Report).  
+- Проверка документов ИИ: свежесть, полнота, соответствие имен, кредитные очки.  
+- Финансовый анализ: чистый доход, правило 30–40% affordability.  
+- Автогенерация Rental Application (с автозаполнением из документов).  
+- Рекомендации: добавить Guarantor, увеличить депозит, сменить роли.  
+- Агент видит прогресс клиента, но не получает документы до Submit (шифрование/дешифрование).  
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Будущие сервисы
+- Аналитика сделок.  
+- Банковские интеграции.  
+- SLA‑отчёты для boards/unions.  
+- Конструктор сервисов (визуальное добавление новых модулей).  
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🔐 Безопасность
+- Все документы хранятся в зашифрованном виде.  
+- Доступ к документам только после Submit.  
+- Все действия фиксируются в аудит‑логах.  
+- 2FA для входа и отправки документов (в планах).  
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 📂 Документация
+- [Admin Overview](./docs/admin/README_ADMIN.md) — админ‑панель, роли, правила.  
+- [FILES_ADMIN.md](./docs/admin/FILES_ADMIN.md) — структура файлов.  
+- [DESIGN_ADMIN.md](./docs/admin/DESIGN_ADMIN.md) — дизайн и статус реализации.  
+
+---
+
+## ⚙️ Технологии
+- React 18 + TypeScript  
+- Vite (SPA, быстрый dev‑сервер)  
+- ESLint + строгая типизация  
+- Context API (`AdminStore.tsx`)  
+
+---
+
+## 📌 Статус
+- ✅ MVP: админка (Agents, Requests, Archive, Logs, Access), invite‑ссылки, CRUD, архивирование.  
+- ⚠️ Частично: авто‑отправка invite, Requests без ИИ‑подсказок, логи требуют улучшений.  
+- ❌ Будущее: расширенная статистика, 2FA, подтверждение контактов, верификация банковских данных, мульти‑организации.  

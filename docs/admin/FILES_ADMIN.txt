@@ -1,83 +1,109 @@
-Отлично, Алексей ⚡. Я собрал для тебя **чистый и согласованный `FILES_ADMIN.md`**, который отражает именно ту файловую систему, что мы увидели в `admin_files.txt` после отката и чистки. Это и будет наш новый активированный манифест.
+# 📂 Admin Files Manifest (актуальная версия)
+
+Описывает структуру, роли, доступы, enforcement‑точки и правила декомпозиции админ‑страниц. Любое изменение сначала фиксируется здесь.
 
 ---
 
-# 📂 Admin Files Manifest (актуализированный)
-
-Описывает структуру, роли, доступы и правила декомпозиции админ‑страниц. Любое изменение сначала фиксируется здесь.
+## 🔐 Access Control
+- Один **Super Admin** (Алексей) управляет правами.  
+- Роли: **Super Admin**, **Admin**, **Viewer**.  
+- **Viewer**: только просмотр (UI disabled).  
+- **Default deny**, обязательная **2FA** для критических действий.  
+- Все изменения логируются, доступны откаты.  
 
 ---
 
 ## 🗂 Admin Pages Structure
 
 ### Layout
-- `apps/web/app/admin/layout.tsx` — основной layout админки.  
-- `apps/web/app/admin/AdminLayoutClient.tsx` — клиентская часть layout.  
-- `apps/web/app/admin/components/Sidebar.tsx` — боковая панель навигации.  
-- `apps/web/app/admin/components/Footer.tsx` — нижняя панель.  
+- `apps/web/app/admin/layout.tsx` — вложенный layout, содержит `AdminProvider`, `Sidebar`, `Topbar`.  
+- `apps/web/components/layout/Sidebar.tsx` — боковая панель навигации (Dashboard, Agents, Requests, Logs, Archive, Settings, Access).  
+- `apps/web/components/layout/Topbar.tsx` — верхняя панель с action‑кнопками (Refresh, Save, Settings, Role selector).  
 
 ### Dashboard
-- `apps/web/app/admin/page.tsx` — главная страница админки (Dashboard).  
-- `apps/web/app/admin/dashboard/page.tsx` — альтернативный вариант Dashboard.  
-- `apps/web/app/admin/dashboard/AdminDashboardPage.tsx` — компонент Dashboard.  
+- `apps/web/app/admin/dashboard/page.tsx` — карточки с ключевыми метриками (агенты, запросы, логи, ошибки).  
 
 ### Agents
-- `apps/web/app/admin/agents/page.tsx` — список агентов.  
-- `apps/web/app/admin/agents/[id]/page.tsx` — карточка агента + клиенты.  
-- `apps/web/app/admin/agents/register/page.tsx` — регистрация нового агента.  
-- `apps/web/components/agents/AgentForm.tsx` — форма агента.  
+- `apps/web/app/admin/agents/page.tsx` — список агентов (CRUD, переход к деталям).  
+- `apps/web/app/admin/agents/[id]/page.tsx` — страница агента: карточка, клиенты, invite‑ссылка, кнопки Edit/Delete/Generate/Regenerate/Revoke.  
+- `apps/web/app/admin/components/AgentEditModal.tsx` — модалка редактирования агента.  
+- `apps/web/app/admin/components/AgentDeleteModal.tsx` — модалка удаления агента (архивирование).  
+- `apps/web/components/agents/AgentForm.tsx` — форма добавления агента.  
 - `apps/web/components/agents/AgentTable.tsx` — таблица агентов.  
 
 ### Clients
-- `apps/web/app/admin/clients/page.tsx` — список клиентов.  
-- `apps/web/app/admin/clients/[id]/page.tsx` — карточка клиента.  
+- `apps/web/app/admin/clients/[id]/page.tsx` — карточка клиента + история активности.  
+- (план) `apps/web/components/clients/ClientCard.tsx` — карточка клиента.  
+- Моки клиентов привязаны к агентам для теста.  
 
 ### Requests
-- `apps/web/app/admin/requests/page.tsx` — таблица входящих запросов.  
+- `apps/web/app/admin/requests/page.tsx` — таблица входящих запросов (только Pending).  
 - `apps/web/components/requests/RequestStatusBadge.tsx` — индикатор статуса заявки.  
+- Логика:
+  - Approve → создаёт агента (Pending), переносит заявку в `archivedRequests` (Approved).  
+  - Reject → переносит заявку в `archivedRequests` (Rejected).  
+  - Rejected нельзя одобрить напрямую, только через восстановление в Pending.  
+
+### Archive
+- `apps/web/app/admin/archive/page.tsx` — архив.  
+  - Deleted Agents: список + Restore.  
+  - Archived Requests: Approved/Rejected + Restore.  
 
 ### Logs
-- `apps/web/app/admin/logs/page.tsx` — журнал событий.  
-- `apps/web/app/admin/logs/useLogs.ts` — хук для работы с логами.  
-- `apps/web/components/logs/LogsFilters.tsx` — фильтры логов.  
-- `apps/web/components/logs/LogsTable.tsx` — таблица логов.  
-- `apps/web/components/logs/LogsPagination.tsx` — пагинация логов.  
+- `apps/web/app/admin/logs/page.tsx` — журнал событий: фильтрация, поиск, пагинация (10/стр), экспорт CSV.  
+- (план) `apps/web/components/logs/LogsFilters.tsx` — фильтры.  
+- (план) `apps/web/components/logs/LogsTable.tsx` — таблица.  
+- (план) `apps/web/components/logs/LogsPagination.tsx` — пагинация.  
+- (план) `apps/web/components/logs/LogsExport.tsx` — экспорт.  
 
 ### Settings
-- `apps/web/app/admin/settings/page.tsx` — страница настроек.  
-- `apps/web/app/admin/settings/SettingsPage.tsx` — компонент настроек.  
+- `apps/web/app/admin/settings/page.tsx` — заглушка.  
+- (будущее) конфигурация системы: платёжные реквизиты агентов, счёт администратора, email‑сервис, webhooks.  
 
-### Users
-- `apps/web/app/admin/users/page.tsx` — список пользователей.  
-- `apps/web/app/admin/users/UsersPage.tsx` — компонент пользователей.  
+### Access
+- `apps/web/app/admin/access/page.tsx` — управление ролями и уровнями доступа.  
 
 ---
 
 ## 📦 Types & Store
-- `apps/web/types/Agent.ts`  
-- `apps/web/types/Request.ts`  
-- `apps/web/types/LogEntry.ts`  
-- `apps/web/context/AdminStore.tsx`  
+- `apps/web/types/Agent.ts` — тип агента:  
+  - id, name, email, boardMemberNumber, accessUntil, status.  
+  - invite: { token, url, expiresAt, status } | null.  
+  - (план) paymentInfo: bankAccount/paymentMethodId.  
+- `apps/web/types/Request.ts` — заявка: id, type, name, email, boardMemberNumber, date, status.  
+- `apps/web/types/LogEntry.ts` — лог: id, type, message, timestamp.  
+- `apps/web/context/AdminStore.tsx` — глобальное состояние:  
+  - agents, archivedAgents, clients, requests, archivedRequests, logs, currentAdminRole.  
+  - Методы: add/update/delete/restore Agent, approve/reject/restore Request, add/detach Client, addLog, generate/revoke Invite.  
 
 ---
 
-## 📜 Changelog (синхронизированный)
-- **2025‑10‑14** Sync: обновлён манифест после отката и чистки.  
-- **2025‑10‑14** Added: Users (страница и компонент).  
-- **2025‑10‑14** Added: Agents/register/page.tsx.  
-- **2025‑10‑14** Added: SettingsPage.tsx.  
-- **2025‑10‑14** Added: useLogs.ts.  
-- **2025‑10‑14** Updated: LogsFilters, LogsTable, LogsPagination — реализованы.  
-- **2025‑10‑14** Updated: Dashboard — теперь есть page.tsx и dashboard/page.tsx (нужно выбрать канонический).  
+## ⚙️ Enforcement Points
+- Route guards (App Router).  
+- Компонентные гварды (условный рендер по ролям).  
+- API‑проверки: роли, согласия, цели, юрисдикция.  
+- Document access mediator: метаданные вместо контента при ограничениях.  
 
 ---
 
-## 📌 Следующий шаг
-Теперь у нас есть актуальный манифест.  
-Нужно решить:  
-1. Какой Dashboard считать каноническим (`app/admin/page.tsx` или `app/admin/dashboard/page.tsx`).  
-2. Оставляем ли Clients как отдельный раздел или возвращаем к правилу «клиенты внутри агента».  
+## 📜 Changelog (ключевые вехи)
+- **2025‑10‑12** Added: финальная версия Clients (список, страница клиента, таблица, форма).  
+- **2025‑10‑12** Added: финальная версия Logs (страница + фильтры + таблица + пагинация + экспорт).  
+- **2025‑10‑11** Added: pagination и экспорт CSV в Logs.  
+- **2025‑10‑11** Fix: строгая типизация в Agent/Request/LogEntry.  
+- **2025‑10‑09** Fix: убрана колонка Action и дублирование статуса в Agents.  
+- **2025‑10‑08** Added: Requests workflow (approve/reject/archive).  
+- **2025‑10‑08** Added: Clients/[id]/page.tsx.  
+- **2025‑10‑08** Refactor: AdminStore хранит agents, clients, requests, logs; добавлены моки.  
+- **2025‑10‑07** Added: создан docs/admin/FILES_ADMIN.md.  
+- **2025‑10‑07** Refactor: вынесена форма агента в AgentForm.tsx.  
 
 ---
 
-Хочешь, я сразу предложу план консолидации Dashboard и Clients, чтобы убрать дубли и вернуться к чистой архитектуре?
+## 📌 Операционные правила
+- Все действия логируются через `addLog`.  
+- Invite‑ссылка = одноразовый онбординг токен.  
+- Requests показывают только Pending; Approved/Rejected → Archive.  
+- Удаление = архивирование.  
+- Viewer = read‑only.  
+- Оплата (будущее): webhook → статус Active, продление accessUntil.  

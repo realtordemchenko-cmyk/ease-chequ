@@ -1,9 +1,10 @@
+// Agent model used across Admin pages and store.
+// Status must support "Active" to align with existing seed and UI.
+export type AgentStatus = "Active" | "Pending" | "Suspended";
+
 export interface Agent {
     id: string;
     name: string;
     email: string;
-    boardMemberNumber: string;
-    accessUntil: string;
-    inviteLink: string;
-    status: "Pending" | "Active" | "Inactive" | "Busy";
+    status: AgentStatus;
 }

@@ -5,6 +5,7 @@ import { Request } from "types/Request";
 
 export default function RequestsPage() {
     const { requests, approveRequest, rejectRequest, currentAdminRole } = useAdmin();
+
     const isViewer = currentAdminRole === "Viewer";
 
     return (
@@ -14,11 +15,9 @@ export default function RequestsPage() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                     <tr>
-                        <th>Type</th>
                         <th>Name</th>
                         <th>Email</th>
-                        <th>Membership #</th>
-                        <th>Date</th>
+                        <th>Type</th>
                         <th>Status</th>
                         {!isViewer && <th>Actions</th>}
                     </tr>
@@ -26,20 +25,23 @@ export default function RequestsPage() {
                 <tbody>
                     {requests.map((req: Request) => (
                         <tr key={req.id}>
-                            <td>{req.type}</td>
                             <td>{req.name}</td>
                             <td>{req.email}</td>
-                            <td>{req.boardMemberNumber}</td>
-                            <td>{new Date(req.date).toLocaleString()}</td>
+                            <td>{req.type}</td>
                             <td>{req.status}</td>
-                            {!isViewer && req.status === "Pending" && (
-                                <td>
-                                    <button style={{ marginRight: "8px" }} onClick={() => approveRequest(req.id)}>
-                                        Approve
-                                    </button>
-                                    <button style={{ background: "red", color: "white" }} onClick={() => rejectRequest(req.id)}>
-                                        Reject
-                                    </button>
+                            {!isViewer && (
+                                <td style={{ display: "flex", gap: "8px" }}>
+                                    {req.status === "Pending" && (
+                                        <>
+                                            <button onClick={() => approveRequest(req.id)}>Approve</button>
+                                            <button
+                                                onClick={() => rejectRequest(req.id)}
+                                                style={{ backgroundColor: "red", color: "white" }}
+                                            >
+                                                Reject
+                                            </button>
+                                        </>
+                                    )}
                                 </td>
                             )}
                         </tr>

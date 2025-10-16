@@ -1,7 +1,9 @@
-// apps/web/app/admin/layout.tsx
-import { AdminProvider } from "context/AdminStore";
-import Sidebar from "app/admin/components/Sidebar";
-import Topbar from "app/admin/components/Topbar";
+"use client";
+
+import React from "react";
+import { AdminProvider } from "../../context/AdminStore";
+import Sidebar from "./components/Sidebar";
+import Topbar from "./components/Topbar";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -11,13 +13,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     display: "grid",
                     gridTemplateColumns: "240px 1fr",
                     minHeight: "100vh",
-                    background: "var(--app-bg)"
+                    background: "var(--app-bg)",
                 }}
             >
                 <aside
                     style={{
                         borderRight: `1px solid var(--card-border)`,
-                        background: "var(--sidebar-bg)"
+                        background: "var(--sidebar-bg)",
                     }}
                 >
                     <Sidebar />
@@ -27,7 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <div
                         style={{
                             borderBottom: `1px solid var(--card-border)`,
-                            background: "var(--topbar-bg)"
+                            background: "var(--topbar-bg)",
                         }}
                     >
                         <Topbar />

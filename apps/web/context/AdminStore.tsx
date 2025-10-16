@@ -1,175 +1,319 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
-import { Agent } from "types/Agent";
-import { Request } from "types/Request";
-import { LogEntry } from "types/LogEntry";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { Agent } from "../types/Agent";
+import { Request } from "../types/Request";
+import { LogEntry } from "../types/LogEntry";
+import { Client } from "../types/Client";
 
-export interface Client {
-    id: string;
-    name: string;
-    status: string;
-    agentId: string;
-}
+type Role = "Super Admin" | "Admin" | "Viewer";
 
 interface AdminContextType {
     agents: Agent[];
-    clients: Client[];
+    archivedAgents: Agent[];
     requests: Request[];
+    archivedRequests: Request[];
+    clients: Client[];
     logs: LogEntry[];
-
-    addAgent: (agent: Omit<Agent, "id">) => void;
+    currentAdminRole: Role;
+    addAgent: (agent: Agent) => void;
     updateAgent: (agent: Agent) => void;
     deleteAgent: (id: string) => void;
-
-    addClient: (client: Omit<Client, "id">) => void;
-    detachClient: (clientId: string) => void;
-
+    restoreAgent: (id: string) => void;
+    regenerateInviteLink: (id: string) => void;
+    addRequest: (req: Request) => void;
     approveRequest: (id: string) => void;
     rejectRequest: (id: string) => void;
-
-    addLog: (log: Omit<LogEntry, "id" | "timestamp">) => void;
-
-    currentAdminRole: "Super Admin" | "Admin" | "Viewer";
-    setAdminRole: (role: "Super Admin" | "Admin" | "Viewer") => void;
+    restoreRequest: (id: string) => void;
+    addClient: (client: Client) => void;
+    deleteClient: (id: string) => void;
+    addLog: (log: LogEntry) => void;
+    setRole: (role: Role) => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
-export function AdminProvider({ children }: { children: React.ReactNode }) {
-    const [agents, setAgents] = useState<Agent[]>([
-        {
-            id: crypto.randomUUID(),
-            name: "Alice Johnson",
-            email: "alice@example.com",
-            boardMemberNumber: "B123",
-            accessUntil: "2025-12-31",
-            inviteLink: "https://example.com/invite/alice",
-            status: "Active"
-        },
-        {
-            id: crypto.randomUUID(),
-            name: "Bob Smith",
-            email: "bob@example.com",
-            boardMemberNumber: "B456",
-            accessUntil: "2025-11-30",
-            inviteLink: "https://example.com/invite/bob",
-            status: "Pending"
-        }
-    ]);
+// UID generator
+const uid = () =>
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `id-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [agents, setAgents] = useState<Agent[]>([]);
+    const [archivedAgents, setArchivedAgents] = useState<Agent[]>([]);
+    const [requests, setRequests] = useState<Request[]>([]);
+    const [archivedRequests, setArchivedRequests] = useState<Request[]>([]);
     const [clients, setClients] = useState<Client[]>([]);
-
-    const [requests, setRequests] = useState<Request[]>([
-        {
-            id: crypto.randomUUID(),
-            type: "Access",
-            name: "Charlie",
-            email: "charlie@example.com",
-            boardMemberNumber: "B789",
-            date: new Date().toISOString(),
-            status: "Pending"
-        },
-        {
-            id: crypto.randomUUID(),
-            type: "Update",
-            name: "Diana",
-            email: "diana@example.com",
-            boardMemberNumber: "B321",
-            date: new Date().toISOString(),
-            status: "Pending"
-        }
-    ]);
-
     const [logs, setLogs] = useState<LogEntry[]>([]);
-    const [currentAdminRole, setCurrentAdminRole] = useState<"Super Admin" | "Admin" | "Viewer">(
-        "Super Admin"
-    );
+    const [currentAdminRole, setCurrentAdminRole] = useState<Role>("Super Admin");
 
-    const addLog = (log: Omit<LogEntry, "id" | "timestamp">) => {
-        setLogs((prev) => [
-            ...prev,
-            { ...log, id: crypto.randomUUID(), timestamp: new Date().toISOString() }
-        ]);
+    // Helpers
+    const readJson = <T,>(key: string, fallback: T): T => {
+        try {
+            const raw = typeof window !== "undefined" ? localStorage.getItem(key) : null;
+            return raw ? (JSON.parse(raw) as T) : fallback;
+        } catch {
+            return fallback;
+        }
+    };
+    const writeJson = (key: string, value: unknown) => {
+        try {
+            if (typeof window !== "undefined") localStorage.setItem(key, JSON.stringify(value));
+        } catch { }
     };
 
-    const addAgent = (agent: Omit<Agent, "id">) => {
-        const newAgent = { ...agent, id: crypto.randomUUID() };
-        setAgents((prev) => [...prev, newAgent]);
-        addLog({ type: "Agent", message: `Agent ${newAgent.name} created` });
+    // Seed
+    useEffect(() => {
+        const hasAgents = readJson<Agent[]>("agents", []);
+        const hasClients = readJson<Client[]>("clients", []);
+        const hasRequests = readJson<Request[]>("requests", []);
+
+        if (hasAgents.length === 0 && hasClients.length === 0 && hasRequests.length === 0) {
+            const seedAgents: Agent[] = [
+                { id: "a1", name: "Alice Agent", email: "alice@example.com", status: "Active" },
+                { id: "a2", name: "Bob Broker", email: "bob@example.com", status: "Active" },
+            ];
+            const seedClients: Client[] = [
+                { id: "c1", name: "Charlie Client", email: "charlie@example.com", phone: "+1-416-555-0101" },
+                { id: "c2", name: "Dana Client", email: "dana@example.com", phone: "+1-416-555-0102" },
+            ];
+            const seedRequests: Request[] = [
+                { id: "r1", name: "Charlie Client", email: "charlie@example.com", type: "Prequal-Rent", status: "Pending" },
+                { id: "r2", name: "Dana Client", email: "dana@example.com", type: "Prequal-Rent", status: "Pending" },
+            ];
+
+            writeJson("agents", seedAgents);
+            writeJson("clients", seedClients);
+            writeJson("requests", seedRequests);
+            writeJson("archivedAgents", []);
+            writeJson("archivedRequests", []);
+            writeJson("logs", []);
+        }
+
+        setAgents(readJson<Agent[]>("agents", []));
+        setArchivedAgents(readJson<Agent[]>("archivedAgents", []));
+        setRequests(readJson<Request[]>("requests", []));
+        setArchivedRequests(readJson<Request[]>("archivedRequests", []));
+        setClients(readJson<Client[]>("clients", []));
+        setLogs(readJson<LogEntry[]>("logs", []));
+    }, []);
+
+    // Persistence
+    useEffect(() => writeJson("agents", agents), [agents]);
+    useEffect(() => writeJson("archivedAgents", archivedAgents), [archivedAgents]);
+    useEffect(() => writeJson("requests", requests), [requests]);
+    useEffect(() => writeJson("archivedRequests", archivedRequests), [archivedRequests]);
+    useEffect(() => writeJson("clients", clients), [clients]);
+    useEffect(() => writeJson("logs", logs), [logs]);
+
+    // === Agents ===
+    const addAgent = (agent: Agent) => {
+        const safeAgent = { ...agent, id: agent.id || uid() };
+        setAgents((prev) => [...prev, safeAgent]);
+        addLog({ id: uid(), type: "Agent", message: `Agent ${safeAgent.name} added`, timestamp: new Date().toISOString() });
     };
 
     const updateAgent = (agent: Agent) => {
-        setAgents((prev) => prev.map((a) => (a.id === agent.id ? agent : a)));
-        addLog({ type: "Agent", message: `Agent ${agent.name} updated (status: ${agent.status})` });
+        setAgents((prev) => {
+            const idx = prev.findIndex((a) => a.id === agent.id);
+            if (idx === -1) return prev;
+            const next = [...prev];
+            next[idx] = { ...prev[idx], ...agent };
+            return next;
+        });
+        addLog({ id: uid(), type: "Agent", message: `Agent ${agent.name} updated`, timestamp: new Date().toISOString() });
     };
 
     const deleteAgent = (id: string) => {
-        const target = agents.find((a) => a.id === id);
-        setAgents((prev) => prev.filter((a) => a.id !== id));
-        if (target) addLog({ type: "Agent", message: `Agent ${target.name} deleted` });
+        setAgents((prev) => {
+            const agent = prev.find((a) => a.id === id);
+            if (!agent) return prev;
+            setArchivedAgents((arch) => [...arch, agent]);
+            addLog({ id: uid(), type: "Agent", message: `Agent ${agent.name} deleted (archived)`, timestamp: new Date().toISOString() });
+            return prev.filter((a) => a.id !== id);
+        });
     };
 
-    const addClient = (client: Omit<Client, "id">) => {
-        setClients((prev) => [...prev, { ...client, id: crypto.randomUUID() }]);
-        addLog({ type: "Client", message: `Client ${client.name} added to agent ${client.agentId}` });
+    const restoreAgent = (id: string) => {
+        setArchivedAgents((prev) => {
+            const agent = prev.find((a) => a.id === id);
+            if (!agent) return prev;
+            setAgents((agents) => [...agents, agent]);
+            addLog({ id: uid(), type: "Agent", message: `Agent ${agent.name} restored from archive`, timestamp: new Date().toISOString() });
+            return prev.filter((a) => a.id !== id);
+        });
     };
 
-    const detachClient = (clientId: string) => {
-        setClients((prev) => prev.filter((c) => c.id !== clientId));
-        addLog({ type: "Client", message: `Client ${clientId} detached` });
+    const regenerateInviteLink = (id: string) => {
+        setAgents((prev) => {
+            const idx = prev.findIndex((a) => a.id === id);
+            if (idx === -1) return prev;
+            const next = [...prev];
+            next[idx] = { ...prev[idx], inviteLink: `https://easechequ.app/invite/${uid()}` };
+            addLog({ id: uid(), type: "Agent", message: `Invite link regenerated for ${next[idx].name}`, timestamp: new Date().toISOString() });
+            return next;
+        });
+    };
+
+    // === Requests ===
+    const addRequest = (req: Request) => {
+        const safeReq = { ...req, id: req.id || uid(), status: req.status || "Pending" };
+        setRequests((prev) => [...prev, safeReq]);
+        addLog({
+            id: uid(),
+            type: "Request",
+            message: `Request ${safeReq.name} added`,
+            timestamp: new Date().toISOString(),
+        });
     };
 
     const approveRequest = (id: string) => {
-        setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status: "Approved" } : r)));
-        const req = requests.find((r) => r.id === id);
-        if (req) {
-            addAgent({
-                name: req.name,
-                email: req.email,
-                boardMemberNumber: req.boardMemberNumber,
-                accessUntil: "",
-                inviteLink: "",
-                status: "Pending"
+        setRequests((prev) => {
+            const req = prev.find((r) => r.id === id);
+            if (!req) return prev;
+
+            const approvedReq = { ...req, status: "Approved" as const };
+            setArchivedRequests((arch) => [...arch, approvedReq]);
+
+            // Dedup by email
+            const existing = agents.find((a) => a.email.toLowerCase() === req.email.toLowerCase());
+            if (!existing) {
+                const newAgent: Agent = {
+                    id: uid(),
+                    name: req.name,
+                    email: req.email,
+                    status: "Active",
+                    inviteLink: `https://easechequ.app/invite/${uid()}`,
+                };
+                setAgents((agents) => [...agents, newAgent]);
+                addLog({
+                    id: uid(),
+                    type: "Agent",
+                    message: `Agent ${newAgent.name} created from approved request`,
+                    timestamp: new Date().toISOString(),
+                });
+            } else {
+                addLog({
+                    id: uid(),
+                    type: "Agent",
+                    message: `Existing agent ${existing.name} matched; no duplicate created`,
+                    timestamp: new Date().toISOString(),
+                });
+            }
+
+            addLog({
+                id: uid(),
+                type: "Request",
+                message: `Request ${req.name} approved (archived)`,
+                timestamp: new Date().toISOString(),
             });
-            addLog({ type: "Request", message: `Request ${id} approved → agent created (${req.name})` });
-        }
+
+            return prev.filter((r) => r.id !== id);
+        });
     };
 
     const rejectRequest = (id: string) => {
-        setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status: "Rejected" } : r)));
-        addLog({ type: "Request", message: `Request ${id} rejected` });
+        setRequests((prev) => {
+            const req = prev.find((r) => r.id === id);
+            if (!req) return prev;
+            const rejectedReq = { ...req, status: "Rejected" as const };
+            setArchivedRequests((arch) => [...arch, rejectedReq]);
+            addLog({
+                id: uid(),
+                type: "Request",
+                message: `Request ${req.name} rejected (archived)`,
+                timestamp: new Date().toISOString(),
+            });
+            return prev.filter((r) => r.id !== id);
+        });
+    };
+
+    const restoreRequest = (id: string) => {
+        setArchivedRequests((prev) => {
+            const req = prev.find((r) => r.id === id);
+            if (!req) return prev;
+            const restoredReq = { ...req, status: "Pending" as const };
+            setRequests((requests) => [...requests, restoredReq]);
+            addLog({
+                id: uid(),
+                type: "Request",
+                message: `Request ${req.name} restored to Pending`,
+                timestamp: new Date().toISOString(),
+            });
+            return prev.filter((r) => r.id !== id);
+        });
+    };
+
+    // === Clients ===
+    const addClient = (client: Client) => {
+        const safeClient = { ...client, id: client.id || uid() };
+        setClients((prev) => [...prev, safeClient]);
+        addLog({
+            id: uid(),
+            type: "Client",
+            message: `Client ${safeClient.name} added`,
+            timestamp: new Date().toISOString(),
+        });
+    };
+
+    const deleteClient = (id: string) => {
+        setClients((prev) => prev.filter((c) => c.id !== id));
+        addLog({
+            id: uid(),
+            type: "Client",
+            message: `Client ${id} deleted`,
+            timestamp: new Date().toISOString(),
+        });
+    };
+
+    // === Logs & Role ===
+    const addLog = (log: LogEntry) => {
+        setLogs((prev) => [...prev, log]);
+    };
+
+    const setRole = (role: Role) => {
+        setCurrentAdminRole(role);
+        addLog({
+            id: uid(),
+            type: "System",
+            message: `Role switched to ${role}`,
+            timestamp: new Date().toISOString(),
+        });
     };
 
     return (
         <AdminContext.Provider
             value={{
                 agents,
-                clients,
+                archivedAgents,
                 requests,
+                archivedRequests,
+                clients,
                 logs,
+                currentAdminRole,
                 addAgent,
                 updateAgent,
                 deleteAgent,
-                addClient,
-                detachClient,
+                restoreAgent,
+                regenerateInviteLink,
+                addRequest,
                 approveRequest,
                 rejectRequest,
+                restoreRequest,
+                addClient,
+                deleteClient,
                 addLog,
-                currentAdminRole,
-                setAdminRole: (role) => {
-                    setCurrentAdminRole(role);
-                    addLog({ type: "Access", message: `Admin role changed to ${role}` });
-                }
+                setRole,
             }}
         >
             {children}
         </AdminContext.Provider>
     );
-}
+};
 
-export function useAdmin() {
-    const ctx = useContext(AdminContext);
-    if (!ctx) throw new Error("useAdmin must be used within AdminProvider");
-    return ctx;
-}
+export const useAdmin = () => {
+    const context = useContext(AdminContext);
+    if (!context) throw new Error("useAdmin must be used within AdminProvider");
+    return context;
+};
