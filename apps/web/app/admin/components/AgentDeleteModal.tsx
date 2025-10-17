@@ -1,3 +1,4 @@
+//D:\Projects\Ease Chequ\apps\web\app\admin\components\AgentDeleteModal.tsx
 "use client";
 
 // Confirmation modal for deleting Agent.

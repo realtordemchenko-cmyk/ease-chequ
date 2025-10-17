@@ -1,3 +1,4 @@
+// D:\Projects\Ease Chequ\apps\web\context\AdminStore.tsx
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
@@ -16,19 +17,24 @@ interface AdminContextType {
     clients: Client[];
     logs: LogEntry[];
     currentAdminRole: Role;
-    addAgent: (agent: Agent) => void;
+
+    addAgent: (agent: Omit<Agent, "id">) => void;
     updateAgent: (agent: Agent) => void;
-    deleteAgent: (id: string) => void;
-    restoreAgent: (id: string) => void;
-    regenerateInviteLink: (id: string) => void;
-    addRequest: (req: Request) => void;
-    approveRequest: (id: string) => void;
-    rejectRequest: (id: string) => void;
-    restoreRequest: (id: string) => void;
-    addClient: (client: Client) => void;
-    deleteClient: (id: string) => void;
-    addLog: (log: LogEntry) => void;
-    setRole: (role: Role) => void;
+
+    deleteAgent: (_id: string) => void;
+    restoreAgent: (_id: string) => void;
+    regenerateInviteLink: (_id: string) => void;
+
+    addRequest: (_req: Request) => void;
+    approveRequest: (_id: string) => void;
+    rejectRequest: (_id: string) => void;
+    restoreRequest: (_id: string) => void;
+
+    addClient: (_client: Client) => void;
+    deleteClient: (_id: string) => void;
+
+    addLog: (_log: LogEntry) => void;
+    setRole: (_role: Role) => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -39,6 +45,28 @@ const uid = () =>
         ? crypto.randomUUID()
         : `id-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+// === Deduplication helper ===
+// Checks both active and archived agents by email and boardMemberNumber
+const isDuplicateAgent = (
+    email: string,
+    boardMemberNumber: string,
+    agents: Agent[],
+    archivedAgents: Agent[]
+): Agent | undefined => {
+    const normalizedEmail = email.trim().toLowerCase();
+    return (
+        agents.find(
+            (a) =>
+                a.email.trim().toLowerCase() === normalizedEmail ||
+                (!!boardMemberNumber && a.boardMemberNumber === boardMemberNumber)
+        ) ||
+        archivedAgents.find(
+            (a) =>
+                a.email.trim().toLowerCase() === normalizedEmail ||
+                (!!boardMemberNumber && a.boardMemberNumber === boardMemberNumber)
+        )
+    );
+};
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [agents, setAgents] = useState<Agent[]>([]);
     const [archivedAgents, setArchivedAgents] = useState<Agent[]>([]);
@@ -60,7 +88,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const writeJson = (key: string, value: unknown) => {
         try {
             if (typeof window !== "undefined") localStorage.setItem(key, JSON.stringify(value));
-        } catch { }
+        } catch {
+            // ignored: localStorage write failed (private mode or storage quota)
+        }
     };
 
     // Seed
@@ -71,12 +101,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         if (hasAgents.length === 0 && hasClients.length === 0 && hasRequests.length === 0) {
             const seedAgents: Agent[] = [
-                { id: "a1", name: "Alice Agent", email: "alice@example.com", status: "Active" },
-                { id: "a2", name: "Bob Broker", email: "bob@example.com", status: "Active" },
+                { id: "a1", name: "Alice Agent", email: "alice@example.com", status: "Active", boardMemberNumber: "", accessUntil: "", inviteLink: "" },
+                { id: "a2", name: "Bob Broker", email: "bob@example.com", status: "Active", boardMemberNumber: "", accessUntil: "", inviteLink: "" },
             ];
             const seedClients: Client[] = [
-                { id: "c1", name: "Charlie Client", email: "charlie@example.com", phone: "+1-416-555-0101" },
-                { id: "c2", name: "Dana Client", email: "dana@example.com", phone: "+1-416-555-0102" },
+                { id: "c1", agentId: "a1", name: "Charlie Client", email: "charlie@example.com", phone: "+1-416-555-0101" },
+                { id: "c2", agentId: "a2", name: "Dana Client", email: "dana@example.com", phone: "+1-416-555-0102" },
             ];
             const seedRequests: Request[] = [
                 { id: "r1", name: "Charlie Client", email: "charlie@example.com", type: "Prequal-Rent", status: "Pending" },
@@ -106,12 +136,34 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     useEffect(() => writeJson("archivedRequests", archivedRequests), [archivedRequests]);
     useEffect(() => writeJson("clients", clients), [clients]);
     useEffect(() => writeJson("logs", logs), [logs]);
-
     // === Agents ===
-    const addAgent = (agent: Agent) => {
-        const safeAgent = { ...agent, id: agent.id || uid() };
+    const addAgent = (agent: Omit<Agent, "id">) => {
+        // Deduplication check
+        const duplicate = isDuplicateAgent(agent.email, agent.boardMemberNumber, agents, archivedAgents);
+        if (duplicate) {
+            addLog({
+                id: uid(),
+                type: "Agent",
+                message: `Duplicate agent detected (${agent.email}); add aborted`,
+                timestamp: new Date().toISOString()
+            });
+            return;
+        }
+
+        const safeAgent: Agent = {
+            ...agent,
+            id: uid(),
+            boardMemberNumber: agent.boardMemberNumber || "",
+            accessUntil: agent.accessUntil || "",
+            inviteLink: agent.inviteLink || `https://easechequ.app/invite/${uid()}`
+        };
         setAgents((prev) => [...prev, safeAgent]);
-        addLog({ id: uid(), type: "Agent", message: `Agent ${safeAgent.name} added`, timestamp: new Date().toISOString() });
+        addLog({
+            id: uid(),
+            type: "Agent",
+            message: `Agent ${safeAgent.name} added`,
+            timestamp: new Date().toISOString()
+        });
     };
 
     const updateAgent = (agent: Agent) => {
@@ -122,15 +174,27 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             next[idx] = { ...prev[idx], ...agent };
             return next;
         });
-        addLog({ id: uid(), type: "Agent", message: `Agent ${agent.name} updated`, timestamp: new Date().toISOString() });
+        addLog({
+            id: uid(),
+            type: "Agent",
+            message: `Agent ${agent.name} updated`,
+            timestamp: new Date().toISOString()
+        });
     };
 
     const deleteAgent = (id: string) => {
         setAgents((prev) => {
             const agent = prev.find((a) => a.id === id);
             if (!agent) return prev;
-            setArchivedAgents((arch) => [...arch, agent]);
-            addLog({ id: uid(), type: "Agent", message: `Agent ${agent.name} deleted (archived)`, timestamp: new Date().toISOString() });
+            // Normalize status to Deleted before archiving
+            const archivedCopy: Agent = { ...agent, status: "Deleted" };
+            setArchivedAgents((arch) => [...arch, archivedCopy]);
+            addLog({
+                id: uid(),
+                type: "Agent",
+                message: `Agent ${agent.name} archived as Deleted`,
+                timestamp: new Date().toISOString()
+            });
             return prev.filter((a) => a.id !== id);
         });
     };
@@ -139,8 +203,26 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setArchivedAgents((prev) => {
             const agent = prev.find((a) => a.id === id);
             if (!agent) return prev;
+
+            // Deduplication check before restore
+            const duplicate = isDuplicateAgent(agent.email, agent.boardMemberNumber, agents, []);
+            if (duplicate) {
+                addLog({
+                    id: uid(),
+                    type: "Agent",
+                    message: `Restore cancelled for ${agent.name} — active agent exists`,
+                    timestamp: new Date().toISOString()
+                });
+                return prev;
+            }
+
             setAgents((agents) => [...agents, agent]);
-            addLog({ id: uid(), type: "Agent", message: `Agent ${agent.name} restored from archive`, timestamp: new Date().toISOString() });
+            addLog({
+                id: uid(),
+                type: "Agent",
+                message: `Agent ${agent.name} restored from archive`,
+                timestamp: new Date().toISOString()
+            });
             return prev.filter((a) => a.id !== id);
         });
     };
@@ -150,12 +232,19 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             const idx = prev.findIndex((a) => a.id === id);
             if (idx === -1) return prev;
             const next = [...prev];
-            next[idx] = { ...prev[idx], inviteLink: `https://easechequ.app/invite/${uid()}` };
-            addLog({ id: uid(), type: "Agent", message: `Invite link regenerated for ${next[idx].name}`, timestamp: new Date().toISOString() });
+            next[idx] = {
+                ...next[idx],
+                inviteLink: `https://easechequ.app/invite/${uid()}`
+            };
+            addLog({
+                id: uid(),
+                type: "Agent",
+                message: `Invite link regenerated for ${next[idx].name}`,
+                timestamp: new Date().toISOString()
+            });
             return next;
         });
     };
-
     // === Requests ===
     const addRequest = (req: Request) => {
         const safeReq = { ...req, id: req.id || uid(), status: req.status || "Pending" };
@@ -176,15 +265,17 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             const approvedReq = { ...req, status: "Approved" as const };
             setArchivedRequests((arch) => [...arch, approvedReq]);
 
-            // Dedup by email
-            const existing = agents.find((a) => a.email.toLowerCase() === req.email.toLowerCase());
-            if (!existing) {
+            // Deduplication check across active and archived agents
+            const duplicate = isDuplicateAgent(req.email, "", agents, archivedAgents);
+            if (!duplicate) {
                 const newAgent: Agent = {
                     id: uid(),
                     name: req.name,
                     email: req.email,
                     status: "Active",
-                    inviteLink: `https://easechequ.app/invite/${uid()}`,
+                    boardMemberNumber: "",
+                    accessUntil: "",
+                    inviteLink: `https://easechequ.app/invite/${uid()}`
                 };
                 setAgents((agents) => [...agents, newAgent]);
                 addLog({
@@ -194,12 +285,21 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                     timestamp: new Date().toISOString(),
                 });
             } else {
-                addLog({
-                    id: uid(),
-                    type: "Agent",
-                    message: `Existing agent ${existing.name} matched; no duplicate created`,
-                    timestamp: new Date().toISOString(),
-                });
+                if (archivedAgents.some(a => a.email.toLowerCase() === req.email.toLowerCase())) {
+                    addLog({
+                        id: uid(),
+                        type: "Agent",
+                        message: `Archived agent with email ${req.email} exists; no new agent created`,
+                        timestamp: new Date().toISOString(),
+                    });
+                } else {
+                    addLog({
+                        id: uid(),
+                        type: "Agent",
+                        message: `Existing agent ${duplicate.name} matched; no duplicate created`,
+                        timestamp: new Date().toISOString(),
+                    });
+                }
             }
 
             addLog({
@@ -244,25 +344,39 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             return prev.filter((r) => r.id !== id);
         });
     };
-
     // === Clients ===
     const addClient = (client: Client) => {
-        const safeClient = { ...client, id: client.id || uid() };
+        // Validate agent existence
+        const agentExists = agents.some((a) => a.id === client.agentId);
+        if (!agentExists) {
+            addLog({
+                id: uid(),
+                type: "Client",
+                message: `Add client aborted — agent ${client.agentId} not found`,
+                timestamp: new Date().toISOString(),
+            });
+            return;
+        }
+
+        const safeClient: Client = { ...client, id: client.id || uid() };
         setClients((prev) => [...prev, safeClient]);
         addLog({
             id: uid(),
             type: "Client",
-            message: `Client ${safeClient.name} added`,
+            message: `Client ${safeClient.name} added to Agent ${client.agentId}`,
             timestamp: new Date().toISOString(),
         });
     };
 
     const deleteClient = (id: string) => {
+        const client = clients.find((c) => c.id === id);
         setClients((prev) => prev.filter((c) => c.id !== id));
         addLog({
             id: uid(),
             type: "Client",
-            message: `Client ${id} deleted`,
+            message: client
+                ? `Client ${client.name} (Agent ${client.agentId}) deleted`
+                : `Client ${id} deleted`,
             timestamp: new Date().toISOString(),
         });
     };

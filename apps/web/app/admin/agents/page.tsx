@@ -1,3 +1,4 @@
+//D:\Projects\Ease Chequ\apps\web\app\admin\agents\page.tsx
 "use client";
 
 import { useAdmin } from "context/AdminStore";
@@ -14,7 +15,7 @@ export default function AgentsPage() {
         boardMemberNumber: "",
         accessUntil: "",
         inviteLink: "",
-        status: "Pending",
+        status: "Active", // исправлено: было "Pending"
     });
 
     const [deleteTarget, setDeleteTarget] = useState<Agent | null>(null);
@@ -36,7 +37,7 @@ export default function AgentsPage() {
             boardMemberNumber: "",
             accessUntil: "",
             inviteLink: "",
-            status: "Pending",
+            status: "Active", // исправлено
         });
     };
 
@@ -108,9 +109,9 @@ export default function AgentsPage() {
                                             })
                                         }
                                     >
-                                        <option value="Pending">Pending</option>
                                         <option value="Active">Active</option>
-                                        <option value="Suspended">Suspended</option>
+                                        <option value="Inactive">Inactive</option>
+                                        <option value="Deleted">Deleted</option>
                                     </select>
                                 ) : (
                                     agent.status

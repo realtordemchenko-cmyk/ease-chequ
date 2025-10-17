@@ -1,3 +1,4 @@
+
 # 📂 Admin Files Manifest (актуальная версия)
 
 Описывает структуру, роли, доступы, enforcement‑точки и правила декомпозиции админ‑страниц. Любое изменение сначала фиксируется здесь.
@@ -17,11 +18,12 @@
 
 ### Layout
 - `apps/web/app/admin/layout.tsx` — вложенный layout, содержит `AdminProvider`, `Sidebar`, `Topbar`.  
-- `apps/web/components/layout/Sidebar.tsx` — боковая панель навигации (Dashboard, Agents, Requests, Logs, Archive, Settings, Access).  
-- `apps/web/components/layout/Topbar.tsx` — верхняя панель с action‑кнопками (Refresh, Save, Settings, Role selector).  
+- `apps/web/app/admin/components/Sidebar.tsx` — боковая панель навигации (Dashboard, Agents, Requests, Logs, Archive, Settings, Access).  
+- `apps/web/app/admin/components/Topbar.tsx` — верхняя панель с action‑кнопками (Refresh, Save, Settings, Role selector).  
 
 ### Dashboard
-- `apps/web/app/admin/dashboard/page.tsx` — карточки с ключевыми метриками (агенты, запросы, логи, ошибки).  
+- `apps/web/app/admin/dashboard/page.tsx` — карточки с ключевыми метриками (агенты, запросы, архив, логи).  
+- Счётчики Deleted Agents и Rejected Requests ведут на `/admin/archive` с query‑параметрами.  
 
 ### Agents
 - `apps/web/app/admin/agents/page.tsx` — список агентов (CRUD, переход к деталям).  
@@ -39,15 +41,16 @@
 ### Requests
 - `apps/web/app/admin/requests/page.tsx` — таблица входящих запросов (только Pending).  
 - `apps/web/components/requests/RequestStatusBadge.tsx` — индикатор статуса заявки.  
-- Логика:
+- Логика:  
   - Approve → создаёт агента (Pending), переносит заявку в `archivedRequests` (Approved).  
   - Reject → переносит заявку в `archivedRequests` (Rejected).  
   - Rejected нельзя одобрить напрямую, только через восстановление в Pending.  
 
 ### Archive
-- `apps/web/app/admin/archive/page.tsx` — архив.  
+- `apps/web/app/admin/archive/page.tsx` — централизованный архив.  
   - Deleted Agents: список + Restore.  
   - Archived Requests: Approved/Rejected + Restore.  
+  - Поддержка query‑параметров: `?page=agents`, `?page=requests&type=approved|rejected`.  
 
 ### Logs
 - `apps/web/app/admin/logs/page.tsx` — журнал событий: фильтрация, поиск, пагинация (10/стр), экспорт CSV.  
@@ -66,15 +69,10 @@
 ---
 
 ## 📦 Types & Store
-- `apps/web/types/Agent.ts` — тип агента:  
-  - id, name, email, boardMemberNumber, accessUntil, status.  
-  - invite: { token, url, expiresAt, status } | null.  
-  - (план) paymentInfo: bankAccount/paymentMethodId.  
-- `apps/web/types/Request.ts` — заявка: id, type, name, email, boardMemberNumber, date, status.  
-- `apps/web/types/LogEntry.ts` — лог: id, type, message, timestamp.  
-- `apps/web/context/AdminStore.tsx` — глобальное состояние:  
-  - agents, archivedAgents, clients, requests, archivedRequests, logs, currentAdminRole.  
-  - Методы: add/update/delete/restore Agent, approve/reject/restore Request, add/detach Client, addLog, generate/revoke Invite.  
+- `apps/web/types/Agent.ts` — тип агента.  
+- `apps/web/types/Request.ts` — тип заявки.  
+- `apps/web/types/LogEntry.ts` — тип лога.  
+- `apps/web/context/AdminStore.tsx` — глобальное состояние (agents, archivedAgents, clients, requests, archivedRequests, logs, currentAdminRole).  
 
 ---
 
@@ -86,13 +84,14 @@
 
 ---
 
-## 📜 Changelog (ключевые вехи)
-- **2025‑10‑12** Added: финальная версия Clients (список, страница клиента, таблица, форма).  
-- **2025‑10‑12** Added: финальная версия Logs (страница + фильтры + таблица + пагинация + экспорт).  
+## 📜 Changelog
+- **2025‑10‑16** Refactor: централизованный архив `/admin/archive`, удалены дубли `archived/`.  
+- **2025‑10‑12** Added: финальная версия Clients.  
+- **2025‑10‑12** Added: финальная версия Logs.  
 - **2025‑10‑11** Added: pagination и экспорт CSV в Logs.  
 - **2025‑10‑11** Fix: строгая типизация в Agent/Request/LogEntry.  
 - **2025‑10‑09** Fix: убрана колонка Action и дублирование статуса в Agents.  
-- **2025‑10‑08** Added: Requests workflow (approve/reject/archive).  
+- **2025‑10‑08** Added: Requests workflow.  
 - **2025‑10‑08** Added: Clients/[id]/page.tsx.  
 - **2025‑10‑08** Refactor: AdminStore хранит agents, clients, requests, logs; добавлены моки.  
 - **2025‑10‑07** Added: создан docs/admin/FILES_ADMIN.md.  
@@ -100,10 +99,4 @@
 
 ---
 
-## 📌 Операционные правила
-- Все действия логируются через `addLog`.  
-- Invite‑ссылка = одноразовый онбординг токен.  
-- Requests показывают только Pending; Approved/Rejected → Archive.  
-- Удаление = архивирование.  
-- Viewer = read‑only.  
-- Оплата (будущее): webhook → статус Active, продление accessUntil.  
+
