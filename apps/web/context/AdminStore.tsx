@@ -2,10 +2,10 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Agent } from "../types/Agent";
-import { Request } from "../types/Request";
-import { LogEntry } from "../types/LogEntry";
-import { Client } from "../types/Client";
+import { Agent } from "@/types/Agent";
+import { Request } from "@/types/Request";
+import { LogEntry } from "@/types/LogEntry";
+import { Client } from "@/types/Client";
 
 type Role = "Super Admin" | "Admin" | "Viewer";
 
@@ -22,6 +22,8 @@ interface AdminContextType {
     updateAgent: (agent: Agent) => void;
 
     deleteAgent: (_id: string) => void;
+    removeAgent: (_id: string) => void;   // ← добавлено
+
     restoreAgent: (_id: string) => void;
     regenerateInviteLink: (_id: string) => void;
 
@@ -419,6 +421,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 deleteClient,
                 addLog,
                 setRole,
+                // алиас для совместимости с AgentsPage
+                removeAgent: deleteAgent,
             }}
         >
             {children}

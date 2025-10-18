@@ -1,44 +1,73 @@
-// apps/web/components/agents/AgentTable.tsx
 "use client";
 
-interface Agent {
-    id: number;
-    name: string;
-    role: string;
+import Link from "next/link";
+import { Agent } from "@/types/Agent";
+
+interface AgentTableProps {
+    agents: Agent[];
+    onDelete: (agent: Agent) => void;
+    onRegenerateLink: (agent: Agent) => void;
 }
 
-const mockAgents: Agent[] = [
-    { id: 1, name: "Alice", role: "Manager" },
-    { id: 2, name: "Bob", role: "Support" },
-    { id: 3, name: "Charlie", role: "Developer" },
-];
-
-export default function AgentTable() {
+export default function AgentTable({
+    agents,
+    onDelete,
+    onRegenerateLink,
+}: AgentTableProps) {
     return (
-        <table
-            style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                background: "var(--card-bg)",
-                color: "var(--secondary-text)",
-                border: `1px solid var(--card-border)`,
-            }}
-        >
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
                 <tr>
-                    <th style={{ textAlign: "left", padding: "8px", borderBottom: `1px solid var(--card-border)` }}>ID</th>
-                    <th style={{ textAlign: "left", padding: "8px", borderBottom: `1px solid var(--card-border)` }}>Name</th>
-                    <th style={{ textAlign: "left", padding: "8px", borderBottom: `1px solid var(--card-border)` }}>Role</th>
+                    <th style={{ textAlign: "left" }}>Name</th>
+                    <th style={{ textAlign: "left" }}>Membership #</th>
+                    <th style={{ textAlign: "left" }}>Email</th>
+                    <th style={{ textAlign: "left" }}>Status</th>
+                    <th style={{ textAlign: "left" }}>Access until</th>
+                    <th style={{ textAlign: "left" }}>Invite link</th>
+                    <th style={{ textAlign: "left" }}>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {mockAgents.map((agent) => (
+                {agents.map((agent) => (
                     <tr key={agent.id}>
-                        <td style={{ padding: "8px", borderBottom: `1px solid var(--card-border)` }}>{agent.id}</td>
-                        <td style={{ padding: "8px", borderBottom: `1px solid var(--card-border)` }}>{agent.name}</td>
-                        <td style={{ padding: "8px", borderBottom: `1px solid var(--card-border)` }}>{agent.role}</td>
+                        <td>
+                            <Link href={`/admin/agents/${agent.id}`}>
+                                {agent.name}
+                            </Link>
+                        </td>
+                        <td>{agent.membershipNumber}</td>
+                        <td>{agent.email}</td>
+                        <td>{agent.status}</td>
+                        <td>{agent.accessUntil ?? "—"}</td>
+                        <td>
+                            {agent.inviteLink ? (
+                                <>
+                                    <a href={agent.inviteLink} target="_blank">
+                                        Open
+                                    </a>{" "}
+                                    |{" "}
+                                    <button onClick={() => onRegenerateLink(agent)}>
+                                        Regenerate
+                                    </button>
+                                </>
+                            ) : (
+                                <button onClick={() => onRegenerateLink(agent)}>
+                                    Generate
+                                </button>
+                            )}
+                        </td>
+                        <td>
+                            <button onClick={() => onDelete(agent)}>Delete</button>
+                        </td>
                     </tr>
                 ))}
+                {agents.length === 0 && (
+                    <tr>
+                        <td colSpan={7} style={{ padding: 12, color: "#666" }}>
+                            No agents found.
+                        </td>
+                    </tr>
+                )}
             </tbody>
         </table>
     );

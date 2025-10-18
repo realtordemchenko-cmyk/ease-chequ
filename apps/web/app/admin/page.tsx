@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { AdminProvider, useAdmin } from "../../context/AdminStore";
+import { AdminProvider, useAdmin } from "@/context/AdminStore";
 
 function DashboardContent() {
     const {

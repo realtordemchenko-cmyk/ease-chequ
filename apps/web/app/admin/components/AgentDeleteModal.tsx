@@ -1,4 +1,3 @@
-//D:\Projects\Ease Chequ\apps\web\app\admin\components\AgentDeleteModal.tsx
 "use client";
 
 // Confirmation modal for deleting Agent.
@@ -8,13 +7,17 @@ interface AgentDeleteModalProps {
     agentName: string;
     onConfirm: () => void;
     onClose: () => void;
+    isOpen: boolean;
 }
 
 export default function AgentDeleteModal({
     agentName,
     onConfirm,
-    onClose
+    onClose,
+    isOpen
 }: AgentDeleteModalProps) {
+    if (!isOpen) return null;
+
     return (
         <div
             role="dialog"

@@ -1,7 +1,12 @@
-// apps/web/components/logs/LogsTable.tsx
 "use client";
 
-import { LogEntry } from "../../types/LogEntry";
+import React, { useState, useEffect } from "react";
+import { LogEntry } from "@/types/LogEntry";
+import { useAdminStore } from "@/context/AdminStore";
+import { Table } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import LogsPagination from "@/components/logs/LogsPagination";
 
 interface LogsTableProps {
     logs: LogEntry[];

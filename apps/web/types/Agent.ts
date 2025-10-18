@@ -1,13 +1,10 @@
-// apps/web/types/Agent.ts
-
-export type AgentStatus = "Active" | "Inactive" | "Deleted";
-
 export interface Agent {
-    id: string;
+    id: string; // строковый id для унификации
     name: string;
     email: string;
-    status: AgentStatus;
-    boardMemberNumber: string;
-    accessUntil: string;
-    inviteLink: string;
+    membershipNumber: string;
+    accessUntil: string | null;
+    inviteLink: string | null;
+    status: string; // e.g., "active" | "inactive" | "suspended"
+    clients?: any[]; // упрощённо; позже заменим на тип Client
 }

@@ -1,227 +1,192 @@
 "use client";
 
-// Agent details page:
-// - Back to Agents button
-// - Status select aligned to AgentStatus ("Active" | "Inactive" | "Deleted")
-// - Editable fields (name, email, boardMemberNumber, accessUntil) for Admin/Super Admin
-// - Invite link regeneration
-// - Clients of this agent: table filtered by agentId with delete action for Admin/Super Admin
-// All logic uses store methods; no local collection mutations.
-
-import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useAdmin } from "context/AdminStore";
-import { Agent } from "types/Agent";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { Agent } from "@/types/Agent";
 
 export default function AgentDetailsPage() {
-    const { id } = useParams<{ id: string }>();
-    const {
-        agents,
-        clients,
-        updateAgent,
-        regenerateInviteLink,
-        deleteClient,
-        currentAdminRole,
-    } = useAdmin();
+    const params = useParams();
+    const router = useRouter();
+    const { agents, updateAgent } = useAdmin();
 
-    const agent = agents.find((a) => a.id === id);
-    const isViewer = currentAdminRole === "Viewer";
-
-    // Local editable state mirrors the agent; updated only by store on save.
-    const [form, setForm] = useState<Omit<Agent, "id"> | null>(null);
-
-    useEffect(() => {
-        if (agent) {
-            setForm({
-                name: agent.name,
-                email: agent.email,
-                status: agent.status,
-                boardMemberNumber: agent.boardMemberNumber,
-                accessUntil: agent.accessUntil,
-                inviteLink: agent.inviteLink,
-            });
-        }
-    }, [agent]);
-
-    // Filter clients belonging to this agent
-    const agentClients = useMemo(
-        () => clients.filter((c) => c.agentId === id),
-        [clients, id]
-    );
-
-    if (!agent || !form) {
-        return (
-            <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <Link href="/admin/agents">← Back to Agents</Link>
-                    <h1 style={{ margin: 0 }}>Agent Details</h1>
-                </div>
-                <p>Agent not found</p>
-            </div>
-        );
+    const idParam = String(params?.id ?? "");
+    // Не позволяем заходить сюда с "new"
+    if (idParam === "new") {
+        router.replace("/admin/agents/new");
+        return null;
     }
 
+    const agent = useMemo(
+        () => agents.find((a) => String(a.id) === idParam) ?? null,
+        [agents, idParam]
+    );
+    const [form, setForm] = useState<Agent | null>(agent);
+
+    if (!agent || !form) {
+        return <div>Agent not found</div>;
+    }
+
+    const handleChange = (field: keyof Agent, value: any) => {
+        setForm({ ...form, [field]: value });
+    };
+
     const handleSave = () => {
-        // Persist edits via store; id remains unchanged
-        updateAgent({
-            id: agent.id,
-            ...form,
-        });
+        if (!form) return;
+        updateAgent(form); // канонично: обновление через стор
+        router.push("/admin/agents");
+    };
+
+    // Клиенты: модалка удаления
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [selectedClient, setSelectedClient] = useState<any | null>(null);
+
+    const confirmDeleteClient = () => {
+        if (!selectedClient || !form) return;
+        const nextClients = (form.clients ?? []).filter((c: any) => String(c.id) !== String(selectedClient.id));
+        const nextForm = { ...form, clients: nextClients };
+        setForm(nextForm);
+        updateAgent(nextForm);
+        setSelectedClient(null);
+        setIsDeleteOpen(false);
     };
 
     return (
-        <div style={{ display: "grid", gap: 24 }}>
-            {/* Header */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <Link href="/admin/agents">← Back to Agents</Link>
-                <h1 style={{ margin: 0 }}>Agent Details</h1>
-            </div>
+        <div>
+            <h1>Agent Details</h1>
 
-            {/* Agent info */}
-            <div style={{ display: "grid", gap: 12, maxWidth: 520 }}>
-                {/* Name */}
-                <label style={{ display: "grid", gap: 6 }}>
-                    <span><strong>Name</strong></span>
-                    {isViewer ? (
-                        <span>{agent.name}</span>
-                    ) : (
-                        <input
-                            type="text"
-                            value={form.name}
-                            onChange={(e) => setForm({ ...form, name: e.target.value })}
-                        />
-                    )}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 420 }}>
+                <label>
+                    Name:
+                    <input
+                        type="text"
+                        value={form.name}
+                        onChange={(e) => handleChange("name", e.target.value)}
+                    />
                 </label>
 
-                {/* Email */}
-                <label style={{ display: "grid", gap: 6 }}>
-                    <span><strong>Email</strong></span>
-                    {isViewer ? (
-                        <span>{agent.email}</span>
-                    ) : (
-                        <input
-                            type="email"
-                            value={form.email}
-                            onChange={(e) => setForm({ ...form, email: e.target.value })}
-                        />
-                    )}
+                <label>
+                    Email:
+                    <input
+                        type="email"
+                        value={form.email}
+                        onChange={(e) => handleChange("email", e.target.value)}
+                    />
                 </label>
 
-                {/* Status (aligned to AgentStatus) */}
-                <label style={{ display: "grid", gap: 6 }}>
-                    <span><strong>Status</strong></span>
-                    {isViewer ? (
-                        <span>{agent.status}</span>
-                    ) : (
-                        <select
-                            value={form.status}
-                            onChange={(e) =>
-                                setForm({ ...form, status: e.target.value as Agent["status"] })
-                            }
-                        >
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
-                            <option value="Deleted">Deleted</option>
-                        </select>
-                    )}
+                <label>
+                    Membership #:
+                    <input
+                        type="text"
+                        value={form.membershipNumber ?? ""}
+                        onChange={(e) => handleChange("membershipNumber", e.target.value)}
+                    />
                 </label>
 
-                {/* Membership number */}
-                <label style={{ display: "grid", gap: 6 }}>
-                    <span><strong>Membership #</strong></span>
-                    {isViewer ? (
-                        <span>{agent.boardMemberNumber}</span>
-                    ) : (
-                        <input
-                            type="text"
-                            value={form.boardMemberNumber}
-                            onChange={(e) =>
-                                setForm({ ...form, boardMemberNumber: e.target.value })
-                            }
-                        />
-                    )}
+                <label>
+                    Status:
+                    <select
+                        value={form.status}
+                        onChange={(e) => handleChange("status", e.target.value)}
+                    >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="suspended">Suspended</option>
+                    </select>
                 </label>
 
-                {/* Access until */}
-                <label style={{ display: "grid", gap: 6 }}>
-                    <span><strong>Access Until</strong></span>
-                    {isViewer ? (
-                        <span>{agent.accessUntil}</span>
-                    ) : (
-                        <input
-                            type="date"
-                            value={form.accessUntil}
-                            onChange={(e) => setForm({ ...form, accessUntil: e.target.value })}
-                        />
-                    )}
+                <label>
+                    Access until:
+                    <input
+                        type="date"
+                        value={form.accessUntil ?? ""}
+                        onChange={(e) => handleChange("accessUntil", e.target.value)}
+                    />
                 </label>
 
-                {/* Invite link and regeneration */}
-                <div style={{ display: "grid", gap: 6 }}>
-                    <span><strong>Invite Link</strong></span>
-                    {agent.inviteLink ? (
-                        <a href={agent.inviteLink} target="_blank" rel="noopener noreferrer">
-                            {agent.inviteLink}
-                        </a>
+                <div>
+                    Invite link:{" "}
+                    {form.inviteLink ? (
+                        <>
+                            <a href={form.inviteLink} target="_blank">Open</a>{" "}
+                            <button onClick={() => handleChange("inviteLink", `link-${Date.now()}`)}>
+                                Regenerate
+                            </button>
+                        </>
                     ) : (
-                        <span>Not generated</span>
-                    )}
-                    {!isViewer && (
-                        <button type="button" onClick={() => regenerateInviteLink(agent.id)}>
-                            Regenerate Invite Link
+                        <button onClick={() => handleChange("inviteLink", `link-${Date.now()}`)}>
+                            Generate
                         </button>
                     )}
                 </div>
 
-                {/* Save button */}
-                {!isViewer && (
-                    <div style={{ display: "flex", gap: 8 }}>
-                        <button type="button" onClick={handleSave}>
-                            Save changes
-                        </button>
-                    </div>
-                )}
+                <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={handleSave}>Save</button>
+                    <button onClick={() => router.push("/admin/agents")}>Cancel</button>
+                </div>
             </div>
 
-            {/* Clients of this agent */}
-            <section>
-                <h2 style={{ margin: "0 0 8px 0" }}>Clients of this agent</h2>
-                {agentClients.length === 0 ? (
-                    <p>No clients linked to this agent yet.</p>
-                ) : (
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                        <thead>
-                            <tr>
-                                <th style={{ textAlign: "left" }}>Name</th>
-                                <th style={{ textAlign: "left" }}>Email</th>
-                                <th style={{ textAlign: "left" }}>Phone</th>
-                                {!isViewer && <th style={{ textAlign: "left" }}>Actions</th>}
+            <hr style={{ margin: "24px 0" }} />
+
+            <h2>Clients</h2>
+            {form.clients && form.clients.length > 0 ? (
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                        <tr>
+                            <th style={{ textAlign: "left" }}>Name</th>
+                            <th style={{ textAlign: "left" }}>Status</th>
+                            <th style={{ textAlign: "left" }}>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {form.clients.map((client: any) => (
+                            <tr key={client.id}>
+                                <td>{client.name}</td>
+                                <td>{client.status}</td>
+                                <td>
+                                    <button
+                                        onClick={() => {
+                                            setSelectedClient(client);
+                                            setIsDeleteOpen(true);
+                                        }}
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {agentClients.map((c) => (
-                                <tr key={c.id}>
-                                    <td>{c.name}</td>
-                                    <td>{c.email}</td>
-                                    <td>{c.phone || ""}</td>
-                                    {!isViewer && (
-                                        <td>
-                                            <button
-                                                type="button"
-                                                onClick={() => deleteClient(c.id)}
-                                                style={{ backgroundColor: "red", color: "white" }}
-                                            >
-                                                Delete
-                                            </button>
-                                        </td>
-                                    )}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </section>
+                        ))}
+                    </tbody>
+                </table>
+            ) : (
+                <p>No clients assigned.</p>
+            )}
+
+            {isDeleteOpen && (
+                <div
+                    style={{
+                        position: "fixed",
+                        inset: 0,
+                        background: "rgba(0,0,0,0.5)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                >
+                    <div style={{ background: "#fff", padding: 20, borderRadius: 8 }}>
+                        <p>
+                            Delete client <strong>{selectedClient?.name}</strong>?
+                        </p>
+                        <div style={{ display: "flex", gap: 8 }}>
+                            <button onClick={confirmDeleteClient}>Confirm</button>
+                            <button onClick={() => setIsDeleteOpen(false)}>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <hr style={{ margin: "24px 0" }} />
+            <h2>Statistics</h2>
+            <p>TODO</p>
         </div>
     );
 }
