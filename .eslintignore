@@ -1,0 +1,6 @@
+.next/
+dist/
+build/
+apps/web/.next/
+apps/web/dist/
+apps/web/build/

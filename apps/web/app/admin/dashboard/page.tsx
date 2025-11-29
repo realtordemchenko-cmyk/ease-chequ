@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 export const dynamic = "force-dynamic";
 
 // Dashboard page (updated):
@@ -7,7 +8,7 @@ export const dynamic = "force-dynamic";
 // - Lightweight: only counters and navigation, no long lists
 
 import Link from "next/link";
-import { useAdmin } from "@/context/AdminStore";
+import { useAdmin } from "@/store/AdminStore";
 
 export default function DashboardPage() {
   const { agents, requests, archivedAgents, archivedRequests } = useAdmin();

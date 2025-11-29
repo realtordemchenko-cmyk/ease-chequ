@@ -1,6 +1,6 @@
 "use client";
 
-import { AdminProvider } from "@/context/AdminStore";
+import { AdminProvider } from "@/store/AdminStore";
 import AdminSidebar from "./components/AdminSidebar";
 import Topbar from "./components/Topbar";
 import React from "react";

@@ -1,10 +1,10 @@
 "use client";
+import React, { useState } from "react";
 
 // Lightweight, reusable edit modal for Agent entity.
 // Props-based to keep component decoupled from context.
 // Comments in English per manifest.
 
-import { useState } from "react";
 import { Agent } from "types/Agent";
 
 interface AgentEditModalProps {

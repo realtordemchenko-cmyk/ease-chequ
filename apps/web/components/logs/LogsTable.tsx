@@ -1,12 +1,7 @@
 "use client";
-
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { LogEntry } from "@/types/LogEntry";
-import { useAdmin } from "@/context/AdminStore";
 import { Table } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import LogsPagination from "@/components/logs/LogsPagination";
 
 interface LogsTableProps {
   logs: LogEntry[];

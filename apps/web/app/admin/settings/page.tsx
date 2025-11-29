@@ -1,7 +1,7 @@
 "use client";
+import React from "react";
 export const dynamic = "force-dynamic";
-
-import { useAdmin } from "@/context/AdminStore";
+import { useAdmin } from "@/store/AdminStore";
 
 export default function SettingsPage() {
   const { currentAdminRole, addLog } = useAdmin();

@@ -1,9 +1,8 @@
 "use client";
+import React, { useState } from "react";
 export const dynamic = "force-dynamic";
-
-import { useAdmin } from "@/context/AdminStore";
+import { useAdmin } from "@/store/AdminStore";
 import { Agent } from "@/types/Agent";
-import { useState } from "react";
 import Link from "next/link";
 import AgentDeleteModal from "../components/AgentDeleteModal";
 import AgentTable from "@/components/agents/AgentTable";

@@ -1,11 +1,8 @@
 // apps/web/components/logs/LogsFilters.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { LogEntry } from "@/types/LogEntry";
-import { useAdmin } from "@/context/AdminStore";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 
 interface LogsFiltersProps {
   search: string;

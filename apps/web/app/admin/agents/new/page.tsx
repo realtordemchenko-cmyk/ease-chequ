@@ -1,9 +1,8 @@
 "use client";
+import React, { useState } from "react";
 export const dynamic = "force-dynamic";
-
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAdmin } from "@/context/AdminStore";
+import { useAdmin } from "@/store/AdminStore";
 import { Agent } from "@/types/Agent";
 
 export default function NewAgentPage() {
@@ -40,8 +39,12 @@ export default function NewAgentPage() {
     try {
       addAgent(newAgent);
       router.push("/admin/agents");
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to add agent");
+    } catch (e: unknown) {
+      if (e && typeof e === "object" && "message" in e) {
+        setError((e as { message?: string }).message ?? "Failed to add agent");
+      } else {
+        setError("Failed to add agent");
+      }
     }
   };
 

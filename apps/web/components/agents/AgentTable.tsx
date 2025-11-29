@@ -1,5 +1,5 @@
 "use client";
-
+import React from "react";
 import Link from "next/link";
 import { Agent } from "@/types/Agent";
 
@@ -43,7 +43,7 @@ export default function AgentTable({
             <td>
               {agent.inviteLink ? (
                 <>
-                  <a href={agent.inviteLink} target="_blank">
+                  <a href={agent.inviteLink} target="_blank" rel="noreferrer">
                     Open
                   </a>{" "}
                   |{" "}

@@ -11,7 +11,8 @@
     "start": "pnpm start:frontend",
     "start:frontend": "cd apps/web && next start -p 3000",
     "check": "pnpm exec tsc --noEmit && pnpm exec eslint . --ext .ts,.tsx",
-    "audit:cruise": "depcruise --config .dependency-cruiser.cjs apps/web --output-type err"
+    "audit:cruise": "depcruise --config .dependency-cruiser.cjs apps/web --output-type err",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
     "clsx": "^2.1.1",
