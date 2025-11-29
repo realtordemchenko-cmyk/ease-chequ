@@ -1,0 +1,80 @@
+# Ease Chequ Admin UI Structure (2025-11-28)
+
+## apps/web/app/admin/
+- layout.tsx
+- page.tsx
+- components/
+    - Sidebar.tsx
+    - Topbar.tsx
+    - Footer.tsx
+    - AgentDeleteModal.tsx
+    - AgentEditModal.tsx
+- agents/
+    - page.tsx
+    - new/
+        - page.tsx
+    - [id]/
+        - page.tsx
+- archive/
+    - page.tsx
+- clients/
+    - [id]/
+        - page.tsx
+- dashboard/
+    - page.tsx
+- logs/
+    - page.tsx
+- requests/
+    - page.tsx
+- settings/
+    - page.tsx
+
+## apps/web/app/
+- globals.css
+- Header.tsx
+- HomePage.tsx
+- layout.tsx
+- page.tsx
+- store/
+    - AgentsContext.tsx
+    - AuditContext.tsx
+
+## apps/web/components/
+- agents/
+    - AgentForm.tsx
+    - AgentTable.tsx
+- layout/
+    - Sidebar.tsx
+- logs/
+    - LogsFilters.tsx
+    - LogsPagination.tsx
+    - LogsTable.tsx
+- requests/
+    - RequestStatusBadge.tsx
+- ui/
+    - button.tsx
+    - input.tsx
+
+## src/components/
+- Button.tsx
+- Card.tsx
+- Footer.tsx
+- Layout.tsx
+
+## src/styles/
+- base.css
+- design-tokens.css
+- globals.css
+
+## docs/admin/
+- DESIGN_ADMIN.md
+- FILES_ADMIN.md
+- FILES_ADMIN.txt
+- Plan_Admin.md
+- pre_plan.md
+- README_ADMIN.md
+- STATUS_ADMIN.md
+
+## docs/services/
+- prequal-rent.md
+- README_SERVICES.md

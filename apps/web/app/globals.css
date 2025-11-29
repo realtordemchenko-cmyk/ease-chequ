@@ -1,24 +1,5 @@
 /* Design tokens: keep as the single source of truth for inline styles */
-:root {
-    --bg-main: #0f1217;
-    --text-main: #000000;
-    --text-muted: #9aa0a6;
-
-    --card-bg: #151922;
-    --card-border: #2a2f3a;
-
-    --primary-bg: #22c55e;
-    --primary-text: #0b1510;
-
-    --secondary-bg: #374151;
-    --secondary-text: #e6e7eb;
-
-    --danger-bg: #ef4444;
-    --danger-text: #ffffff;
-
-    --input-bg: #9fbda6;
-    --input-border: #3a404c;
-}
+/* Очищено: все цвета теперь задаются только inline-стилями по эталону AdminLayout.tsx */
 
 /* Important:
    - We intentionally do NOT style html/body here to avoid overriding page-level inline styles.
@@ -29,5 +10,5 @@
 *,
 *::before,
 *::after {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }

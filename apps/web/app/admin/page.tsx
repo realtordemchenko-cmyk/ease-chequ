@@ -1,60 +1,107 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import React from "react";
-import { AdminProvider, useAdmin } from "@/context/AdminStore";
-
-function DashboardContent() {
-    const {
-        agents,
-        clients,
-        requests,
-        archivedAgents,
-        archivedRequests,
-    } = useAdmin();
-
-    const approvedArchived = archivedRequests.filter((r) => r.status === "Approved").length;
-    const rejectedArchived = archivedRequests.filter((r) => r.status === "Rejected").length;
-
-    return (
-        <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(3, 1fr)", padding: 16 }}>
-            <div style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: 6 }}>
-                <h3>Agents</h3>
-                <p>{agents.length}</p>
-            </div>
-
-            <div style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: 6 }}>
-                <h3>Clients</h3>
-                <p>{clients.length}</p>
-            </div>
-
-            <div style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: 6 }}>
-                <h3>Requests</h3>
-                <p>{requests.length}</p>
-            </div>
-
-            <div style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: 6 }}>
-                <h3>Deleted Agents (Archive)</h3>
-                <p>{archivedAgents.length}</p>
-            </div>
-
-            <div style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: 6 }}>
-                <h3>Approved Requests (Archive)</h3>
-                <p>{approvedArchived}</p>
-            </div>
-
-            <div style={{ padding: 12, border: "1px solid var(--card-border)", borderRadius: 6 }}>
-                <h3>Rejected Requests (Archive)</h3>
-                <p>{rejectedArchived}</p>
-            </div>
-        </div>
-    );
-}
+import { useAdmin } from "@/context/AdminStore";
 
 export default function AdminDashboardPage() {
-    // Local provider wrap to avoid reliance on layout while we restore it safely
-    return (
-        <AdminProvider>
-            <DashboardContent />
-        </AdminProvider>
-    );
+  const { agents, clients, requests, archivedAgents, archivedRequests } =
+    useAdmin();
+
+  const approvedArchived = archivedRequests.filter(
+    (r) => r.status === "Approved"
+  ).length;
+  const rejectedArchived = archivedRequests.filter(
+    (r) => r.status === "Rejected"
+  ).length;
+
+  return (
+    <div
+      style={{
+        display: "grid",
+        gap: 24,
+        gridTemplateColumns: "repeat(3, 1fr)",
+        padding: 24,
+      }}
+    >
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #456d5bff",
+          borderRadius: 10,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+          padding: 20,
+        }}
+      >
+        <h3 style={{ color: "#456d5bff", fontWeight: 700 }}>Agents</h3>
+        <p style={{ fontSize: 22, fontWeight: 600 }}>{agents.length}</p>
+      </div>
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #456d5bff",
+          borderRadius: 10,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+          padding: 20,
+        }}
+      >
+        <h3 style={{ color: "#456d5bff", fontWeight: 700 }}>Clients</h3>
+        <p style={{ fontSize: 22, fontWeight: 600 }}>{clients.length}</p>
+      </div>
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #456d5bff",
+          borderRadius: 10,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+          padding: 20,
+        }}
+      >
+        <h3 style={{ color: "#456d5bff", fontWeight: 700 }}>Requests</h3>
+        <p style={{ fontSize: 22, fontWeight: 600 }}>{requests.length}</p>
+      </div>
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #456d5bff",
+          borderRadius: 10,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+          padding: 20,
+        }}
+      >
+        <h3 style={{ color: "#456d5bff", fontWeight: 700 }}>
+          Deleted Agents (Archive)
+        </h3>
+        <p style={{ fontSize: 22, fontWeight: 600 }}>{archivedAgents.length}</p>
+      </div>
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #456d5bff",
+          borderRadius: 10,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+          padding: 20,
+        }}
+      >
+        <h3 style={{ color: "#456d5bff", fontWeight: 700 }}>
+          Approved Requests (Archive)
+        </h3>
+        <p style={{ fontSize: 22, fontWeight: 600 }}>{approvedArchived}</p>
+      </div>
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #456d5bff",
+          borderRadius: 10,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+          padding: 20,
+        }}
+      >
+        <h3 style={{ color: "#456d5bff", fontWeight: 700 }}>
+          Rejected Requests (Archive)
+        </h3>
+        <p style={{ fontSize: 22, fontWeight: 600 }}>{rejectedArchived}</p>
+      </div>
+    </div>
+  );
 }
