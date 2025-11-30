@@ -1,28 +1,36 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React from "react";
 
+const nav = [
+  { href: "/admin/dashboard", label: "Dashboard" },
+  { href: "/admin/agents", label: "Agents" },
+  { href: "/admin/clients", label: "Clients" },
+  { href: "/admin/requests", label: "Requests" },
+  { href: "/admin/logs", label: "Logs" },
+  { href: "/admin/settings", label: "Settings" },
+  { href: "/admin/archive", label: "Archive" },
+];
+
 export default function AdminSidebar() {
+  const pathname = usePathname();
+
   return (
-    <nav
-      style={{
-        width: 220,
-        background: "var(--sidebar-bg, #f7fafc)",
-        borderRight: "1px solid var(--card-border, #e2e8f0)",
-        minHeight: "100vh",
-        padding: 24,
-        display: "flex",
-        flexDirection: "column",
-        gap: 16,
-      }}
-    >
-      <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24 }}>Admin</h3>
-      <Link href="/admin/dashboard">Dashboard</Link>
-      <Link href="/admin/agents">Agents</Link>
-      <Link href="/admin/clients">Clients</Link>
-      <Link href="/admin/requests">Requests</Link>
-      <Link href="/admin/logs">Logs</Link>
-      <Link href="/admin/settings">Settings</Link>
-      <Link href="/admin/archive">Archive</Link>
+    <nav className="sidebar">
+      <div className="brand">Ease Chequ Admin</div>
+      {nav.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className={
+            pathname === item.href ? "navItem navItemActive" : "navItem"
+          }
+        >
+          {item.label}
+        </Link>
+      ))}
     </nav>
   );
 }
