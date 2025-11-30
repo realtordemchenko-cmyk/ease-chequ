@@ -13,26 +13,30 @@ export default function AgentDetailsPage() {
 
   // Hydration guard
   const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-  if (!isMounted) return null;
-
   const idParam = String(params?.id ?? "");
-  if (idParam === "new") {
-    router.replace("/admin/agents/new");
-    return null;
-  }
-
   const agent = useMemo(
     () => agents.find((a) => String(a.id) === idParam) ?? null,
     [agents, idParam]
   );
   const [form, setForm] = useState<Agent | null>(agent);
+  const agentClients = useMemo(
+    () => clients.filter((c) => c.agentId === agent?.id),
+    [clients, agent?.id]
+  );
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   useEffect(() => {
     setForm(agent ?? null);
   }, [agent]);
 
+  if (!isMounted) return null;
+  if (idParam === "new") {
+    router.replace("/admin/agents/new");
+    return null;
+  }
   if (!agent || !form) {
     return <div>Agent not found</div>;
   }
@@ -51,13 +55,6 @@ export default function AgentDetailsPage() {
     regenerateInviteLink(agent.id);
   };
 
-  const agentClients = useMemo(
-    () => clients.filter((c) => c.agentId === agent.id),
-    [clients, agent.id]
-  );
-
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const confirmDeleteClient = () => {
     if (!selectedClient) return;
     deleteClient(selectedClient.id);
