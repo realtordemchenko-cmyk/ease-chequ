@@ -3,7 +3,7 @@
 "use client";
 import React from "react";
 export const dynamic = "force-dynamic";
-import { useAdmin } from "@/store/AdminStore";
+import { useAdmin } from "../../store/AdminStore";
 import { Request } from "types/Request";
 
 export default function RequestsPage() {

@@ -1,14 +1,17 @@
 "use client";
 import React, { useState } from "react";
 export const dynamic = "force-dynamic";
-import { useAdmin } from "@/store/AdminStore";
-import { Agent } from "@/types/Agent";
+import { useAdmin } from "../../store/AdminStore";
+// If the Agent type exists elsewhere, update the path accordingly, for example:
+import { Agent } from "../../../types/Agent";
 import Link from "next/link";
 import AgentDeleteModal from "../components/AgentDeleteModal";
-import AgentTable from "@/components/agents/AgentTable";
+import AgentTable from "../../../components/agents/AgentTable";
 
 export default function AgentsPage() {
-  const { agents, removeAgent } = useAdmin();
+  const admin = useAdmin();
+  if (!admin) return null;
+  const { agents, removeAgent } = admin;
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
 

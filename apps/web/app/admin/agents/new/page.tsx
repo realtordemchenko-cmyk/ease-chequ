@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 export const dynamic = "force-dynamic";
 import { useRouter } from "next/navigation";
-import { useAdmin } from "@/store/AdminStore";
+import { useAdmin } from "../../../store/AdminStore";
 import { Agent } from "@/types/Agent";
 
 export default function NewAgentPage() {

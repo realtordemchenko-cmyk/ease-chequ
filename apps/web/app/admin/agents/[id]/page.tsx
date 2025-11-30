@@ -1,7 +1,7 @@
 "use client";
 import React, { useMemo, useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useAdmin } from "@/store/AdminStore";
+import { useAdmin } from "../../../store/AdminStore";
 import { Agent } from "@/types/Agent";
 import { Client } from "@/types/Client";
 

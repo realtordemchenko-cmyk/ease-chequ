@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 
-import { useAdmin } from "@/store/AdminStore";
+import { useAdmin } from "../../store/AdminStore";
 
 export default function Topbar() {
   const { currentAdminRole, setRole, addLog } = useAdmin();

@@ -2,10 +2,10 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Agent } from "@/types/Agent";
-import { Request } from "@/types/Request";
-import { LogEntry } from "@/types/LogEntry";
-import { Client } from "@/types/Client";
+import { Agent } from "types/Agent";
+import { Request } from "types/Request";
+import { LogEntry } from "types/LogEntry";
+import { Client } from "types/Client";
 
 type Role = "Super Admin" | "Admin" | "Viewer";
 
@@ -45,7 +45,28 @@ const AdminContext = createContext<AdminContextType | undefined>(undefined);
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [agents] = useState<Agent[]>([]);
+  const [agents] = useState<Agent[]>([
+    {
+      id: "1",
+      name: "Alice Smith",
+      email: "alice@example.com",
+      membershipNumber: "A12345",
+      accessUntil: "2024-12-31",
+      inviteLink: "https://example.com/invite/1",
+      status: "active",
+      clients: [],
+    },
+    {
+      id: "2",
+      name: "Bob Johnson",
+      email: "bob@example.com",
+      membershipNumber: "B67890",
+      accessUntil: null,
+      inviteLink: null,
+      status: "inactive",
+      clients: [],
+    },
+  ]);
   const [archivedAgents] = useState<Agent[]>([]);
   const [requests] = useState<Request[]>([]);
   const [archivedRequests] = useState<Request[]>([]);

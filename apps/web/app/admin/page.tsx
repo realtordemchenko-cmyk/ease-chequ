@@ -2,7 +2,7 @@
 export const dynamic = "force-dynamic";
 
 import React from "react";
-import { useAdmin } from "@/store/AdminStore";
+import { useAdmin } from "../store/AdminStore";
 
 export default function AdminDashboardPage() {
   const { agents, clients, requests, archivedAgents, archivedRequests } =

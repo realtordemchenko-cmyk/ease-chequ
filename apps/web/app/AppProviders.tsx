@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { AdminProvider } from "@/store/AdminStore";
+import { AdminProvider } from "./store/AdminStore";
 
 export default function AppProviders({
   children,

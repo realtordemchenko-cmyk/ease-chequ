@@ -11,12 +11,12 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "incremental": true,
-    "baseUrl": ".",
+    "baseUrl": "..",
     "paths": {
       "@/*": ["app/*"],
       "app/*": ["app/*"],
       "context/*": ["app/store/*"],
-      "types/*": ["types/*"]
+      "types/*": ["../types/*"]
     },
     "allowJs": true,
     "esModuleInterop": true,

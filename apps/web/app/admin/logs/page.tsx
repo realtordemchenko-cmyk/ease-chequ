@@ -1,8 +1,8 @@
 "use client";
 import React from "react";
 export const dynamic = "force-dynamic";
-import { useAdmin } from "@/store/AdminStore";
-import LogsPagination from "@/components/logs/LogsPagination";
+import { useAdmin } from "../../store/AdminStore";
+import LogsPagination from "../../../components/logs/LogsPagination";
 
 export default function LogsPage() {
   const { logs } = useAdmin();
