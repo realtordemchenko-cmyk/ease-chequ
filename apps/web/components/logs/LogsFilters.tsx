@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { LogEntry } from "@/types/LogEntry";
+import { LogEntry } from "../../types/LogEntry";
 
 interface LogsFiltersProps {
   search: string;

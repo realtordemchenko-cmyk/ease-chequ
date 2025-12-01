@@ -5,7 +5,7 @@ import React, { useState } from "react";
 // Props-based to keep component decoupled from context.
 // Comments in English per manifest.
 
-import { Agent } from "types/Agent";
+import { Agent } from "../../../types/Agent";
 
 interface AgentEditModalProps {
   agent: Agent;

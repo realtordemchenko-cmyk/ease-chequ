@@ -4,11 +4,18 @@
 import React from "react";
 export const dynamic = "force-dynamic";
 import { useAdmin } from "../../store/AdminStore";
-import { Request } from "types/Request";
+import { Request } from "../../../types/Request";
 
 export default function RequestsPage() {
-  const { requests, approveRequest, rejectRequest, currentAdminRole } =
-    useAdmin();
+  const admin = useAdmin();
+  if (!admin) {
+    if (typeof window === "undefined") return null; // SSR: do not render
+    // Client but context not available: show fallback or error
+    return (
+      <div style={{ color: "red", padding: 8 }}>Admin context unavailable</div>
+    );
+  }
+  const { requests, approveRequest, rejectRequest, currentAdminRole } = admin;
 
   const isViewer = currentAdminRole === "Viewer";
 

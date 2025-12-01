@@ -1,7 +1,12 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useAdmin } from "./store/AdminStore";
 
 export default function NotFound() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const admin = useAdmin();
+  if (!mounted || admin === null) return null;
   return (
     <div style={{ padding: 40, textAlign: "center" }}>
       <h1 style={{ fontSize: 32, fontWeight: 700, color: "#c00" }}>

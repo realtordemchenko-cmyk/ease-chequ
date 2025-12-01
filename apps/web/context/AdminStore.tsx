@@ -2,10 +2,10 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Agent } from "@/types/Agent";
-import { Request } from "@/types/Request";
-import { LogEntry } from "@/types/LogEntry";
-import { Client } from "@/types/Client";
+import { Agent } from "../types/Agent";
+import { Request } from "../types/Request";
+import { LogEntry } from "../types/LogEntry";
+import { Client } from "../types/Client";
 
 type Role = "Super Admin" | "Admin" | "Viewer";
 

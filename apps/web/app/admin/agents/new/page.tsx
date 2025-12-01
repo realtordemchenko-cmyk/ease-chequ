@@ -3,10 +3,17 @@ import React, { useState } from "react";
 export const dynamic = "force-dynamic";
 import { useRouter } from "next/navigation";
 import { useAdmin } from "../../../store/AdminStore";
-import { Agent } from "@/types/Agent";
+import { Agent } from "../../../../types/Agent";
 
 export default function NewAgentPage() {
-  const { addAgent } = useAdmin(); // каноничный API стора: addAgent
+  const admin = useAdmin();
+  function hasFallback(obj: unknown): obj is { __fallback: boolean } {
+    return typeof obj === "object" && obj !== null && "__fallback" in obj;
+  }
+  if (!admin || hasFallback(admin)) {
+    return <div>AdminStore not available</div>;
+  }
+  const { addAgent } = admin;
   const router = useRouter();
 
   const [name, setName] = useState("");

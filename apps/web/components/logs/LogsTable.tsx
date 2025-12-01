@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
-import { LogEntry } from "@/types/LogEntry";
-import { Table } from "@/components/ui/table";
+import { LogEntry } from "../../types/LogEntry";
+import { Table } from "../ui/table";
 
 interface LogsTableProps {
   logs: LogEntry[];

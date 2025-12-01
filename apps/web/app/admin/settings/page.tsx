@@ -4,7 +4,15 @@ export const dynamic = "force-dynamic";
 import { useAdmin } from "../../store/AdminStore";
 
 export default function SettingsPage() {
-  const { currentAdminRole, addLog } = useAdmin();
+  const admin = useAdmin();
+  if (!admin) {
+    if (typeof window === "undefined") return null; // SSR: do not render
+    // Client but context not available: show fallback or error
+    return (
+      <div style={{ color: "red", padding: 8 }}>Admin context unavailable</div>
+    );
+  }
+  const { currentAdminRole, addLog } = admin;
 
   if (currentAdminRole === "Viewer") {
     return <div>Access denied</div>;

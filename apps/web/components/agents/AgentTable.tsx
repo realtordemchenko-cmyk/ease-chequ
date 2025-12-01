@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { Agent } from "@/types/Agent";
+import { Agent } from "../../types/Agent";
 
 interface AgentTableProps {
   agents: Agent[];

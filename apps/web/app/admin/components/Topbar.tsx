@@ -1,10 +1,14 @@
 "use client";
-import React from "react";
-
+import React, { useEffect, useState } from "react";
 import { useAdmin } from "../../store/AdminStore";
 
 export default function Topbar() {
-  const { currentAdminRole, setRole, addLog } = useAdmin();
+  // Mounted guard to avoid hydration mismatches
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const admin = useAdmin();
+  if (!mounted || !admin) return null;
+  const { currentAdminRole, setRole, addLog } = admin;
 
   const handleRefresh = () => window.location.reload();
 
@@ -18,6 +22,7 @@ export default function Topbar() {
       message: "Manual save triggered",
       timestamp: new Date().toISOString(),
     });
+    // Avoid alert during SSR; runs only client side after mounted
     alert("Changes saved (simulated)");
   };
 

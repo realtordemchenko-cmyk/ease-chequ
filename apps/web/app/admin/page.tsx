@@ -5,8 +5,15 @@ import React from "react";
 import { useAdmin } from "../store/AdminStore";
 
 export default function AdminDashboardPage() {
-  const { agents, clients, requests, archivedAgents, archivedRequests } =
-    useAdmin();
+  const admin = useAdmin();
+  if (!admin) {
+    if (typeof window === "undefined") return null; // SSR: do not render
+    // Client but context not available: show fallback or error
+    return (
+      <div style={{ color: "red", padding: 8 }}>Admin context unavailable</div>
+    );
+  }
+  const { agents, clients, requests, archivedAgents, archivedRequests } = admin;
 
   const approvedArchived = archivedRequests.filter(
     (r) => r.status === "Approved"

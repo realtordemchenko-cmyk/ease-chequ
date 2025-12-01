@@ -2,15 +2,21 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAdmin } from "../../../store/AdminStore";
-import { Agent } from "@/types/Agent";
-import { Client } from "@/types/Client";
+import { Agent } from "../../../../types/Agent";
+import { Client } from "../../../../types/Client";
 
 export default function AgentDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const admin = useAdmin();
+  function hasFallback(obj: unknown): obj is { __fallback: boolean } {
+    return typeof obj === "object" && obj !== null && "__fallback" in obj;
+  }
+  if (!admin || hasFallback(admin)) {
+    return <div>AdminStore not available</div>;
+  }
   const { agents, clients, updateAgent, regenerateInviteLink, deleteClient } =
-    useAdmin();
-
+    admin;
   // Hydration guard
   const [isMounted, setIsMounted] = useState(false);
   const idParam = String(params?.id ?? "");

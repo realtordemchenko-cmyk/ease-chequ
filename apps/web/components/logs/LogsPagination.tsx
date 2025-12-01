@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useMemo } from "react";
-import { LogEntry } from "@/types/LogEntry";
+import { LogEntry } from "../../types/LogEntry";
 
 interface LogsPaginationProps {
   logs: LogEntry[];

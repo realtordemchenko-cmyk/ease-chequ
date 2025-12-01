@@ -1,9 +1,15 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useAdmin } from "./store/AdminStore";
 
 export default function Page() {
+  // Mounted guard to avoid SSR context usage
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const admin = useAdmin();
+  if (!mounted || admin === null) return null;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       <h1

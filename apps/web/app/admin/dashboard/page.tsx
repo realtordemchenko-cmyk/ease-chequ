@@ -11,7 +11,15 @@ import Link from "next/link";
 import { useAdmin } from "../../store/AdminStore";
 
 export default function DashboardPage() {
-  const { agents, requests, archivedAgents, archivedRequests } = useAdmin();
+  const admin = useAdmin();
+  if (!admin) {
+    if (typeof window === "undefined") return null; // SSR: do not render
+    // Client but context not available: show fallback or error
+    return (
+      <div style={{ color: "red", padding: 8 }}>Admin context unavailable</div>
+    );
+  }
+  const { agents, requests, archivedAgents, archivedRequests } = admin;
 
   const activeAgents = agents.filter((a) => a.status === "Active").length;
   const deletedAgents = archivedAgents.length;
